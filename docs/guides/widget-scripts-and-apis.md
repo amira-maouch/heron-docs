@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 2
 ---
 
 # Widget Scripts & APIs
@@ -16,13 +16,13 @@ export default myScript;
 
 ## `$self` — this widget's own handle
 
-| Method | Use it for |
-|---|---|
-| `getChild(alias)` | Get a child by its `metadata.json` `alias` (e.g. `"@saveBtn"`) |
-| `getProps()` / `setProps(props)` | Read/merge this widget's own props |
-| `emit(event, data?)` | Emit a public event from this widget |
-| `t(key, options?)` | Translate against this widget's `translations/_self/` |
-| `listen(handlers)` | Bulk-attach DOM handlers to a child |
+| Method                            | Use it for                                                                                                |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `getChild(alias)`                 | Get a child by its `metadata.json` `alias` (e.g. `"@saveBtn"`)                                            |
+| `getProps()` / `setProps(props)`  | Read/merge this widget's own props                                                                        |
+| `emit(event, data?)`              | Emit a public event from this widget                                                                      |
+| `t(key, options?)`                | Translate against this widget's `translations/_self/`                                                     |
+| `listen(handlers)`                | Bulk-attach DOM handlers to a child                                                                       |
 | `can(action, subject, resource?)` | Authorization check — see [Authentication & Authorization](/docs/guides/authentication-and-authorization) |
 
 Real usage, `bootstrap_app`'s dashboard widget:
@@ -37,16 +37,16 @@ adding to them — call it once per child, not repeatedly.
 
 ## `$egret` — the app-wide runtime
 
-| Area | Members |
-|---|---|
-| Lookup | `getInstance(id)`, `has(id)`, `list()` |
-| Events | `addEventListener`, `emitComponentEvent`, `events.registerComponent(id, handlers)` |
-| i18n | `t(key)`, `language`, `onLanguageChange(cb)`, `i18n.changeLanguage(locale)` |
-| Services | `getService(name)`, `hasService(name)`, `initService(name, config)` |
-| Theme | `theme.setTheme(name, mode?)`, `theme.toggleMode()`, `theme.getState()` |
-| Page | `getPageParams()`, `page.setDocumentTitle(title)` (route widget only) |
-| Env | `getEnv("EGRET_...")` |
-| Auth | `auth.can(action, subject)`, `auth.getAccessToken()` |
+| Area     | Members                                                                            |
+| -------- | ---------------------------------------------------------------------------------- |
+| Lookup   | `getInstance(id)`, `has(id)`, `list()`                                             |
+| Events   | `addEventListener`, `emitComponentEvent`, `events.registerComponent(id, handlers)` |
+| i18n     | `t(key)`, `language`, `onLanguageChange(cb)`, `i18n.changeLanguage(locale)`        |
+| Services | `getService(name)`, `hasService(name)`, `initService(name, config)`                |
+| Theme    | `theme.setTheme(name, mode?)`, `theme.toggleMode()`, `theme.getState()`            |
+| Page     | `getPageParams()`, `page.setDocumentTitle(title)` (route widget only)              |
+| Env      | `getEnv("EGRET_...")`                                                              |
+| Auth     | `auth.can(action, subject)`, `auth.getAccessToken()`                               |
 
 Real usage:
 
@@ -57,8 +57,12 @@ label: $self.t("nav_dashboard"),
 
 ```ts
 // alefbab_app/widgets/pages/system/user-settings/script.ts
-const client = $egret.getService("egretClient").withConfig({ apiBaseUrl: authBase });
-const res = await client.call("authentication.get_my_profile", { kind: "query" });
+const client = $egret
+  .getService("egretClient")
+  .withConfig({ apiBaseUrl: authBase });
+const res = await client.call("authentication.get_my_profile", {
+  kind: "query",
+});
 ```
 
 ```ts

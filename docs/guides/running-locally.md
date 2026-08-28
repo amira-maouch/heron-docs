@@ -79,12 +79,3 @@ whether SSR is enabled:
 
 - **Any app**: your own test setup, if you've added one (Vitest, Playwright,
   etc. aren't provided by the framework).
-- **SSR-enabled apps** get real smoke scripts for free, real example from
-  `bootstrap_app/package.json`:
-  ```json
-  "smoke:hydration": "node ./smoke/hydration-browser.mjs",
-  "smoke:auth-isolation": "node ./smoke/auth-isolation-browser.mjs",
-  "benchmark:ssr": "node ./smoke/ssr-benchmark.mjs"
-  ```
-  These drive a real headless browser against your running SSR server. See
-  [Using SSR § Testing SSR locally](/docs/guides/ssr/using-ssr#testing-ssr-locally).
