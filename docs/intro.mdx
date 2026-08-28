@@ -1,0 +1,36 @@
+---
+sidebar_position: 1
+---
+
+# Welcome
+
+This site documents **Heron**: what it is, how it's put together, how to do
+common tasks, and how to move between versions.
+
+- **[Heron Overview](/docs/heron/overview)** — what Heron is, the apps and
+  packages in the monorepo, and how the pieces fit together.
+- **[How-To Guides](/docs/guides/running-locally)** — task-focused
+  walkthroughs for day-to-day work.
+- **[Migration Guides](/docs/migration/template)** — step-by-step guides for
+  upgrading between versions.
+
+## Adding a page
+
+Every page here is a Markdown/MDX file under `docs/`. Folder structure maps
+directly to the URL and sidebar, including nesting — so a new subfolder with
+its own `_category_.json` becomes a new nested route automatically. Add a
+file, commit, push — the deploy picks it up.
+
+## Versioning
+
+This site isn't versioned yet — there's a single, always-current set of docs.
+When Heron cuts its next major version and old docs need to stay available,
+run:
+
+```bash
+npm run docusaurus docs:version 1.0
+```
+
+That snapshots the current `docs/` into `versioned_docs/version-1.0/` and adds
+a version switcher to the navbar. Keep editing `docs/` as the "next"
+(unreleased) version after that.
