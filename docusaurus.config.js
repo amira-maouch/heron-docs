@@ -23,8 +23,7 @@ const config = {
   url: 'https://heron-docs.vercel.app',
   baseUrl: '/',
 
-  // TODO: replace with the actual GitHub org/user + repo name once the repo is created.
-  organizationName: 'your-github-org',
+  organizationName: 'amira-maouch',
   projectName: 'heron-docs',
 
   onBrokenLinks: 'warn',
@@ -44,8 +43,7 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
-          // TODO: point this at the real repo once created, or remove to drop "edit this page" links.
-          editUrl: 'https://github.com/your-github-org/heron-docs/tree/main/',
+          editUrl: 'https://github.com/amira-maouch/heron-docs/tree/main/',
         },
         blog: false,
         theme: {
@@ -77,7 +75,7 @@ const config = {
             label: 'Docs',
           },
           {
-            href: 'https://github.com/your-github-org/heron-docs',
+            href: 'https://github.com/amira-maouch/heron-docs',
             label: 'GitHub',
             position: 'right',
           },
