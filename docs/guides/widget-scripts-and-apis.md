@@ -70,21 +70,12 @@ const res = await client.call("authentication.get_my_profile", {
 $egret.i18n.loadNamespaces(["components", "validation", "errors"]);
 ```
 
-## Calling your backend: `egretClient`
+## Calling a service
 
-Most widgets talk to a backend through the `egretClient` service (initialized
-once by a [middleware](/docs/guides/how-to-create-a-middleware), then reused
-everywhere):
-
-```ts
-const client = $egret.getService("egretClient");
-await client.listDocuments("contracting.contract", { pageLength: 20 });
-await client.runCommand("users.deactivate_user", {}, { aggregateId: userId });
-await client.runQuery("reporting.summary", { from: "2026-01-01" });
-```
-
-See [How to Wire Heron to an Egret Backend](/docs/guides/how-to-wire-egret-backend)
-for the full request/response shape.
+`getService`/`hasService` (table above) is how a script reaches an app-wide
+singleton — a backend client, most commonly. See
+[Services](/docs/guides/services) for how a service gets vendored,
+initialized, and called.
 
 ## Toasts
 
