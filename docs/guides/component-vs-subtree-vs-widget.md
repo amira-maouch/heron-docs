@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 6
 ---
 
 # Component, Subtree, or Widget?
@@ -23,7 +23,7 @@ Plain nodes inside a widget's `metadata.json` `children` array. This is the
 default — most of a page's UI is just subtree.
 
 **Use when**: the markup is only ever used in this one widget. It doesn't
-need its own translations namespace, its own SSR loader, or to be reused
+need its own translations namespace, its own server-side data loader, or to be reused
 elsewhere. Real example — a page's error/success alerts, form fields, and
 buttons are all subtree inside `widgets/pages/system/user-settings/metadata.json`,
 wired up by that same widget's single `script.ts`.
@@ -44,7 +44,7 @@ A separate folder under `widgets/`, embedded into a parent via
 
 **Use when** any of these is true:
 - It's reused across multiple pages/layouts (a header, a sidebar menu).
-- It needs its own SSR data loader (`server.ts`).
+- It needs its own [server-side data loader](/docs/guides/widget-data-loaders) (`server.ts`).
 - It needs its own translation namespace, independent of the page that
   happens to embed it.
 - It has its own route — every routed page (`app-manifest.json` → `widget`)

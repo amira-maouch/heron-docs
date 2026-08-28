@@ -134,34 +134,13 @@ The actual app content. Each **widget** is a folder with:
 |---|---|---|
 | `metadata.json` | Yes | The component tree — what renders |
 | `script.ts` | No | Client-side behavior, wired via `$egret`/`$self` |
-| `server.ts` | No | SSR-only data loader (see [Using SSR](/docs/guides/ssr/using-ssr)) |
+| `server.ts` | No | Server-side data loader (see [How to Add a Widget Data Loader](/docs/guides/widget-data-loaders)) |
 | `styles.css` | No | Extra scoped CSS beyond utility classes |
 | `translations/_self/{locale}.json` | No | Strings scoped to this widget |
 
-`widgets/root/metadata.json` is the always-on app shell (toaster, dialog
-provider, i18n provider) that every page mounts into. Real excerpt:
-
-```json
-{
-  "component": "egret:core:layout",
-  "id": "app-root",
-  "children": [
-    { "component": "egret-ui:core:sonner-provider", "id": "app-toaster" },
-    { "component": "ui:overlay:dialog-provider", "id": "app-dialog" },
-    {
-      "component": "ui:layout:i18n-provider",
-      "id": "language-provider",
-      "children": [
-        {
-          "component": "egret:core:app-provider",
-          "id": "app-provider",
-          "children": [{ "component": "egret:core:slot", "id": "page-outlet" }]
-        }
-      ]
-    }
-  ]
-}
-```
+One widget is special: `widgets/root/` wraps every single route and holds
+app-wide providers (toasts, dialogs, i18n) — see
+[The Root Layout](/docs/guides/root-layout).
 
 For everything else about widgets — when to make a new one, how components
 and aliases work, what APIs `script.ts` can call — see

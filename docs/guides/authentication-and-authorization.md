@@ -1,5 +1,5 @@
 ---
-sidebar_position: 11
+sidebar_position: 15
 ---
 
 # Authentication & Authorization
@@ -42,6 +42,24 @@ Simple, no server-side enforcement — fine for CSR-only apps where the API
 itself is the real authorization boundary.
 
 ## Option B — `AuthAdapter` (SSR apps, cookie sessions, custom backends)
+
+### When you actually need this
+
+An `AuthAdapter` is a **centralized, server-safe bridge** between Heron's
+server and your real backend — `authenticate()`, `verify()`, `revoke()`, and
+`loadPermissions()`.
+
+The reason it's necessary once you have real permissions/roles: a Heron app
+doesn't just render a page once — the server also handles the requests that
+fetch widgets, scripts, and actions on their own (see
+[App Structure](/docs/heron/app-structure) and
+[How to Add a Server Action](/docs/guides/server-actions)). For `can` to
+correctly prune a widget tree or protect a server action, **the server**
+needs to know who's asking and what they're allowed to do — not just the
+browser. Option A's client-side token (stored in `localStorage`) never
+reaches the server, so it can't power server-side `can` enforcement. If your
+app has more than one role or any real permission model, use `AuthAdapter` so
+`can` is actually enforced where it matters, not just used to hide UI.
 
 What `bootstrap_app` does: `app.config.ts` points at an adapter file, and the
 framework handles cookie sessions, SSR-side verification, and permission

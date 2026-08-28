@@ -1,11 +1,11 @@
 ---
-sidebar_position: 2
+sidebar_position: 1
 ---
 
 # How to Add a Widget
 
 A widget is a folder under `widgets/` with a `metadata.json` and, optionally,
-a script, an SSR loader, styles, and translations.
+a script, a server-side data loader, styles, and translations.
 
 ## 1. Create the folder
 
@@ -13,7 +13,7 @@ a script, an SSR loader, styles, and translations.
 widgets/pages/my-feature/
 ├── metadata.json          # required
 ├── script.ts               # optional — client behavior
-├── server.ts                # optional — SSR data loader
+├── server.ts                # optional — server-side data loader
 ├── styles.css                # optional — extra scoped CSS
 └── translations/_self/
     ├── en.json
@@ -79,8 +79,8 @@ Widgets aren't routable on their own — add an entry to `app-manifest.json`:
 }
 ```
 
-See [How to Add a Route](/docs/guides/how-to-add-a-route) for nested/dynamic
-routes.
+See [How to Add a Route](/docs/guides/how-to-add-a-route) next. (Don't worry
+about the `layout` field yet — that's covered right after.)
 
 ## Not every screen needs a new widget
 

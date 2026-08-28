@@ -1,11 +1,12 @@
 ---
-sidebar_position: 1
+sidebar_position: 4
 ---
 
 # How to Add a Layout
 
-A layout is a widget that wraps page content with shared chrome — header,
-sidebar, footer — and leaves a slot where the matched route's widget mounts.
+A layout is chrome — header, sidebar, footer — shared by a group of routes.
+Unlike the [root layout](/docs/guides/root-layout) (always on, every route),
+a layout is opt-in: you attach it to specific routes via `app-manifest.json`.
 
 ## 1. Create the widget
 
@@ -46,14 +47,14 @@ Real example, `doubleguard-webapp`'s `widgets/layouts/app-shell/metadata.json`:
 ```
 
 Two things do the actual work:
-- `egret:core:slot` — the matched route's widget renders here.
+- `egret:core:slot` — the matched route's widget renders here (this layout's
+  own `page-content` slot, itself nested inside the root layout's
+  `page-outlet` slot).
 - `egret:core:section-reference` (`ref.path`) — embeds another widget (here,
   `widgets/shell/app-header`) as a reusable chunk of chrome. This is how you
   share a header/sidebar across many layouts without copy-pasting it.
 
-## 2. Wire it to routes
-
-Reference the layout folder path from `app-manifest.json`:
+## 2. Wire it to a route
 
 ```json
 "dashboard": {
@@ -63,20 +64,47 @@ Reference the layout folder path from `app-manifest.json`:
 }
 ```
 
-## 3. Layout inheritance
+Routes with no `layout` render directly inside the root layout, with no extra
+chrome — fine for a login page or a fullscreen view.
 
-A nested route with no `layout` of its own inherits the nearest ancestor
-route's layout. Set `"overrideLayout": true` to break out of it — real
-example, a report page that needs a fullscreen layout instead of the parent's:
+## Nested routes and layout inheritance
+
+`children` in `app-manifest.json` express route hierarchy and flatten into
+fully-qualified routes. A nested route with no `layout` of its own inherits
+the nearest ancestor's layout — real example, `alefbab_app`:
 
 ```json
-"report": {
-  "widget": "pages/dev/routing-demo-report",
-  "layout": "layouts/fullscreen-layout",
-  "overrideLayout": true,
-  "title": "Project Report"
+"project-demo": {
+  "widget": "pages/dev/routing-demo-list",
+  "layout": "layouts/main-layout",
+  "title": "Project List",
+  "children": {
+    ":id": {
+      "widget": "pages/dev/routing-demo-detail",
+      "title": "Project Detail",
+      "children": {
+        "tasks": {
+          "widget": "pages/dev/routing-demo-tasks",
+          "title": "Project Tasks"
+        },
+        "report": {
+          "widget": "pages/dev/routing-demo-report",
+          "layout": "layouts/fullscreen-layout",
+          "overrideLayout": true,
+          "title": "Project Report"
+        }
+      }
+    }
+  }
 }
 ```
 
-See [How to Add a Route](/docs/guides/how-to-add-a-route) for the full routing
-model.
+This gives you `/project-demo`, `/project-demo/:id`,
+`/project-demo/:id/tasks`, `/project-demo/:id/report`. `tasks` inherits
+`project-demo`'s `layouts/main-layout` automatically. `report` needs a
+different, fullscreen layout — it sets its own `layout` **and**
+`overrideLayout: true` to break out of the inherited one rather than nesting
+inside it.
+
+See [How to Add a Route](/docs/guides/how-to-add-a-route) for the rest of the
+routing model (dynamic segments, `appPathPrefix`, 404s, gating with `can`).

@@ -1,11 +1,10 @@
 ---
-sidebar_position: 6
+sidebar_position: 2
 ---
 
 # How to Add a Route
 
-Routes live in `app-manifest.json`. Each entry maps a URL slug to a widget
-(and optionally a layout).
+Routes live in `app-manifest.json`. Each entry maps a URL slug to a widget.
 
 ## Basic route
 
@@ -13,15 +12,20 @@ Routes live in `app-manifest.json`. Each entry maps a URL slug to a widget
 "routes": {
   "dashboard": {
     "widget": "pages/dashboard",
-    "layout": "layouts/main-layout",
     "title": "Dashboard"
   }
 }
 ```
 
 `https://yourapp/<appPathPrefix>/dashboard` renders
-`widgets/pages/dashboard/metadata.json` wrapped in
-`widgets/layouts/main-layout` inside the always-on `widgets/root`.
+`widgets/pages/dashboard/metadata.json`, wrapped inside the always-on
+`widgets/root` (see [The Root Layout](/docs/guides/root-layout) — every route
+gets this automatically, nothing to configure here).
+
+You can also wrap a route in a named `layout` (shared header/sidebar/footer
+chrome) — that's the next guide,
+[How to Add a Layout](/docs/guides/how-to-add-a-layout), once you know what a
+route is.
 
 ## `appPathPrefix`
 
@@ -38,48 +42,12 @@ to an empty string to serve routes at the site root.
 
 ```json
 "report-view/:reportId": {
-  "widget": "pages/reports/view",
-  "layout": "layouts/main-layout"
+  "widget": "pages/reports/view"
 }
 ```
 
 Static segments always win over `:param` segments when both could match, and
 longer exact matches win over shorter/prefix ones.
-
-## Nested routes
-
-`children` express hierarchy and flatten into fully-qualified routes, real
-example from `alefbab_app`:
-
-```json
-"project-demo": {
-  "widget": "pages/dev/routing-demo-list",
-  "layout": "layouts/main-layout",
-  "title": "Project List",
-  "children": {
-    ":id": {
-      "widget": "pages/dev/routing-demo-detail",
-      "title": "Project Detail",
-      "children": {
-        "tasks": {
-          "widget": "pages/dev/routing-demo-tasks",
-          "title": "Project Tasks"
-        },
-        "report": {
-          "widget": "pages/dev/routing-demo-report",
-          "layout": "layouts/fullscreen-layout",
-          "overrideLayout": true,
-          "title": "Project Report"
-        }
-      }
-    }
-  }
-}
-```
-
-This gives you `/project-demo`, `/project-demo/:id`,
-`/project-demo/:id/tasks`, `/project-demo/:id/report`. Children inherit the
-parent's `layout` unless they set their own or pass `overrideLayout: true`.
 
 ## 404s
 
@@ -97,3 +65,9 @@ parent's `layout` unless they set their own or pass `overrideLayout: true`.
 ```
 
 See [Authentication & Authorization](/docs/guides/authentication-and-authorization).
+
+## Next
+
+Routes can also nest, and inherit or override a layout — that builds on
+[How to Add a Layout](/docs/guides/how-to-add-a-layout), so it's covered
+there once layouts make sense.
