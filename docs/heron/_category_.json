@@ -3,6 +3,6 @@
   "position": 2,
   "link": {
     "type": "generated-index",
-    "description": "What Heron is and how its packages fit together."
+    "description": "What's in a Heron app: every file and folder, and what it's for."
   }
 }

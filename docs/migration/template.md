@@ -20,7 +20,7 @@ the sections below. Delete this note once you have real guides in place.
 List each breaking change with:
 - What changed and why.
 - The error or symptom you'll see if you don't migrate.
-- The affected package(s) — link to [Heron Overview](/docs/heron/overview)
+- The affected package(s) — link to [App Structure](/docs/heron/app-structure)
   entries where relevant.
 
 ## Step-by-step

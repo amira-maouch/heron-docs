@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 0
 ---
 
 # Running Heron Locally
@@ -41,9 +41,9 @@ pnpm test
 
 - This is a Turborepo-managed monorepo (`turbo.json`), so `pnpm build` /
   `pnpm test` fan out to each package via Turbo's task graph and cache.
-- See [Heron Overview](/docs/heron/overview) for what each package does, and
-  [Architecture](/docs/heron/architecture) for cross-package contracts to
-  keep in mind while developing.
+- This is about developing the Heron **framework** itself. If you're building
+  an app on top of Heron rather than contributing to it, start at
+  [App Structure](/docs/heron/app-structure) instead.
 
 :::tip Adding another guide
 Add a new `.md` file next to this one (or a subfolder with its own

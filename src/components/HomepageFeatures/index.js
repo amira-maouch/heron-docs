@@ -5,13 +5,13 @@ import styles from './styles.module.css';
 
 const FeatureList = [
   {
-    title: 'Heron Overview',
+    title: 'App Structure',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
-    to: '/docs/heron/overview',
+    to: '/docs/heron/app-structure',
     description: (
       <>
-        What Heron is, the apps and packages in the monorepo, and how the
-        pieces fit together.
+        Every file and folder in a Heron app — config, routes, widgets,
+        translations — and what each one is for.
       </>
     ),
   },
@@ -21,19 +21,30 @@ const FeatureList = [
     to: '/docs/guides/running-locally',
     description: (
       <>
-        Task-focused walkthroughs — running Heron locally, adding a package,
-        and other day-to-day workflows.
+        Task-focused walkthroughs — add a widget, wire up auth, use SSR, and
+        other day-to-day workflows.
+      </>
+    ),
+  },
+  {
+    title: 'Best Practices',
+    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    to: '/docs/best-practices/ssr',
+    description: (
+      <>
+        Patterns worth following for SEO, SSR, and widget APIs once the
+        basics click.
       </>
     ),
   },
   {
     title: 'Migration Guides',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
-    to: '/docs/migration/template',
+    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    to: '/docs/migration/main-to-ssr',
     description: (
       <>
-        Step-by-step guides for upgrading between versions and migrating
-        breaking changes.
+        Step-by-step guides for upgrading between versions, starting with
+        main → the SSR branch.
       </>
     ),
   },
@@ -41,7 +52,7 @@ const FeatureList = [
 
 function Feature({Svg, title, description, to}) {
   return (
-    <div className={clsx('col col--4')}>
+    <div className={clsx('col col--3')}>
       <Link to={to} className={styles.featureLink}>
         <div className="text--center">
           <Svg className={styles.featureSvg} role="img" />

@@ -87,9 +87,10 @@ const config = {
           {
             title: 'Docs',
             items: [
-              {label: 'Heron Overview', to: '/docs/heron/overview'},
+              {label: 'App Structure', to: '/docs/heron/app-structure'},
               {label: 'How-To Guides', to: '/docs/guides/running-locally'},
-              {label: 'Migration Guides', to: '/docs/migration/template'},
+              {label: 'Best Practices', to: '/docs/best-practices/ssr'},
+              {label: 'Migration Guides', to: '/docs/migration/main-to-ssr'},
             ],
           },
         ],
