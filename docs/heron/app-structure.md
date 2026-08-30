@@ -137,6 +137,7 @@ The actual app content. Each **widget** is a folder with:
 | `server.ts` | No | Server-side data loader (see [How to Add a Widget Data Loader](/docs/guides/widgets/widget-data-loaders)) |
 | `styles.css` | No | Extra scoped CSS beyond utility classes (see [Using styles.css](/docs/guides/widgets/using-styles-css)) |
 | `translations/_self/{locale}.json` | No | Strings scoped to this widget |
+| `contract.json` | No | Declares public `methods`/`events` other widgets can call/listen to (see [Widget Scripts & APIs § Exposing methods and events](/docs/guides/widgets/widget-scripts-and-apis#exposing-methods-and-events-to-other-widgets)) |
 
 One widget is special: `widgets/root/` wraps every single route and holds
 app-wide providers (toasts, dialogs, i18n) — see
