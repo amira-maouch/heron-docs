@@ -1,5 +1,5 @@
 ---
-sidebar_position: 6
+sidebar_position: 5
 ---
 
 # Component, Subtree, or Widget?
@@ -11,7 +11,7 @@ Three different ways to structure UI in Heron, and how to pick.
 A self-contained, reusable UI primitive with **no app-specific logic** —
 `shadcn:shadcn:button`, `ui:display:avatar`, `ui:feedback:spinner`. You don't
 author these per-app; you vendor them (see
-[How to Add a Component to the Registry](/docs/guides/how-to-add-a-component-to-the-registry))
+[How to Add a Component to the Registry](/docs/guides/setup/vendor-a-registry-component))
 and reference them by id in any `metadata.json`.
 
 **Use when**: the thing you need is generic UI with no knowledge of your
@@ -44,7 +44,7 @@ A separate folder under `widgets/`, embedded into a parent via
 
 **Use when** any of these is true:
 - It's reused across multiple pages/layouts (a header, a sidebar menu).
-- It needs its own [server-side data loader](/docs/guides/widget-data-loaders) (`server.ts`).
+- It needs its own [server-side data loader](/docs/guides/widgets/widget-data-loaders) (`server.ts`).
 - It needs its own translation namespace, independent of the page that
   happens to embed it.
 - It has its own route — every routed page (`app-manifest.json` → `widget`)

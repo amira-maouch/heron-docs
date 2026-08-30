@@ -57,7 +57,7 @@ export default defineConfig({
 - `localization` — default/fallback/supported locales.
 
 Two more fields exist but are opt-in — see
-[Authentication & Authorization](/docs/guides/authentication-and-authorization)
+[Authentication & Authorization](/docs/guides/backend-and-auth/authentication-and-authorization)
 for `authorization`, and [Using SSR](/docs/guides/ssr/using-ssr) for `ssr`.
 
 ## `vite.config.ts`
@@ -79,7 +79,7 @@ export default createViteConfig({
 ## `app-manifest.json`
 
 Maps URL slugs to widget folders. See
-[How to Add a Route](/docs/guides/how-to-add-a-route) for the full breakdown.
+[How to Add a Route](/docs/guides/widgets/how-to-add-a-route) for the full breakdown.
 
 ```json
 {
@@ -109,7 +109,7 @@ written by the build tooling when you add/update a registry component.
 
 Files here register **page-lifecycle guards** — code that runs on every
 client-side navigation, before the page renders (auth checks, service setup).
-See [How to Create a Middleware](/docs/guides/how-to-create-a-middleware).
+See [How to Create a Middleware](/docs/guides/setup/how-to-create-a-middleware).
 
 ## `themes/`
 
@@ -134,24 +134,24 @@ The actual app content. Each **widget** is a folder with:
 |---|---|---|
 | `metadata.json` | Yes | The component tree — what renders |
 | `script.ts` | No | Client-side behavior, wired via `$egret`/`$self` |
-| `server.ts` | No | Server-side data loader (see [How to Add a Widget Data Loader](/docs/guides/widget-data-loaders)) |
-| `styles.css` | No | Extra scoped CSS beyond utility classes |
+| `server.ts` | No | Server-side data loader (see [How to Add a Widget Data Loader](/docs/guides/widgets/widget-data-loaders)) |
+| `styles.css` | No | Extra scoped CSS beyond utility classes (see [Using styles.css](/docs/guides/widgets/using-styles-css)) |
 | `translations/_self/{locale}.json` | No | Strings scoped to this widget |
 
 One widget is special: `widgets/root/` wraps every single route and holds
 app-wide providers (toasts, dialogs, i18n) — see
-[The Root Layout](/docs/guides/root-layout).
+[The Root Layout](/docs/guides/widgets/root-layout).
 
 For everything else about widgets — when to make a new one, how components
 and aliases work, what APIs `script.ts` can call — see
-[How to Add a Widget](/docs/guides/how-to-add-a-widget) and
-[Widget Scripts & APIs](/docs/guides/widget-scripts-and-apis).
+[How to Add a Widget](/docs/guides/widgets/how-to-add-a-widget) and
+[Widget Scripts & APIs](/docs/guides/widgets/widget-scripts-and-apis).
 
 ## `translations/` (app level)
 
 Shared i18n namespaces every widget can pull from — `common`, `actions`,
 `errors`, `validation`, plus one folder per registry component that ships its
-own strings. See [How to Add Translations](/docs/guides/how-to-add-translations).
+own strings. See [How to Add Translations](/docs/guides/widgets/how-to-add-translations).
 
 ## `index.css`, `index.html`, `main.tsx`
 

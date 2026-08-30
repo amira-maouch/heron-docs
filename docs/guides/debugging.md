@@ -1,5 +1,5 @@
 ---
-sidebar_position: 19
+sidebar_position: 6
 ---
 
 # Debugging Heron Apps
@@ -11,7 +11,7 @@ Common failure modes and how to actually find them — most Heron failures are
 
 **Likely cause**: the component id in `metadata.json` couldn't be resolved
 (typo in `registry:namespace:type`, or not vendored — see
-[How to Add a Component to the Registry](/docs/guides/how-to-add-a-component-to-the-registry)).
+[How to Add a Component to the Registry](/docs/guides/setup/vendor-a-registry-component)).
 A missing component still emits `component_ready` (so the page doesn't hang),
 but logs a console error and renders nothing. **Check the browser console
 first**, not the network tab.
@@ -28,7 +28,7 @@ ready and the page never reaches `pageReady`.
 **Likely cause**: the `@Middleware({...})` annotation wasn't the *leading*
 comment directly above the `const`. Check for a stray `function` declaration
 between the comment and the middleware — that silently breaks registration.
-See [How to Create a Middleware](/docs/guides/how-to-create-a-middleware).
+See [How to Create a Middleware](/docs/guides/setup/how-to-create-a-middleware).
 
 ## `setProps` right after `getChild` seems to work even before mount
 
@@ -48,7 +48,7 @@ subscribers on the same event.
 The namespace probably wasn't loaded. `common`/`actions` load automatically;
 everything else (`components`, `validation`, `errors`, or your own) needs an
 explicit `$egret.i18n.loadNamespaces([...])` — see
-[How to Add Translations](/docs/guides/how-to-add-translations).
+[How to Add Translations](/docs/guides/widgets/how-to-add-translations).
 
 ## Changed `app.config.ts` but nothing happened
 
@@ -60,7 +60,7 @@ editing `app.config.ts` or `.env` — a file save alone won't pick it up.
 Auth checks fail closed while permissions are still loading (`status !==
 "ready"`). Don't gate a loading spinner on a `can()` check — it'll never
 resolve `true` before permissions arrive. See
-[Authorization Checks](/docs/guides/authorization-checks).
+[Authorization Checks](/docs/guides/backend-and-auth/authorization-checks).
 
 ## An SSR route renders differently than its CSR twin
 

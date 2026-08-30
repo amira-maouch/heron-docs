@@ -19,7 +19,7 @@ case: SSR is what makes a page's real content show up in View Source (and
 therefore to search engines) instead of an empty shell.
 
 **Private, authenticated pages** (routes gated with `can` — see
-[Authorization Checks](/docs/guides/authorization-checks)) are, by
+[Authorization Checks](/docs/guides/backend-and-auth/authorization-checks)) are, by
 definition, not crawlable and don't matter for SEO. Default these to CSR.
 
 The one exception: a `can`-gated page that's very performance-critical and
@@ -80,7 +80,7 @@ CSR.
 ## Loading data server-side
 
 Widgets fetch data before render via `server.ts` — that's covered in its own
-guide: [How to Add a Widget Data Loader](/docs/guides/widget-data-loaders).
+guide: [How to Add a Widget Data Loader](/docs/guides/widgets/widget-data-loaders).
 This isn't SSR-specific (it works on CSR routes too, avoiding a client-side
 fetch waterfall), but it's especially relevant for SSR: a loader is what lets
 a public page's real content — not a loading spinner — be present in the

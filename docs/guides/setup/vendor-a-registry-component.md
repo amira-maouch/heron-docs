@@ -1,8 +1,8 @@
 ---
-sidebar_position: 7
+sidebar_position: 1
 ---
 
-# How to Add a Component to the Registry
+# How to Vendor a Registry Component
 
 Components referenced in `metadata.json` (`shadcn:shadcn:button`,
 `ui:display:avatar`, `egret-ui:core:sonner-provider`, ...) aren't bundled into
@@ -42,19 +42,8 @@ Check `.bundle-lock.json` at your app root — every key in it is a component
 or service id you can already reference in `metadata.json` without adding
 anything.
 
-## Publishing a brand-new component
+## Need a component that doesn't exist yet?
 
-If you need a component that doesn't exist in any registry yet, it gets
-authored and published in the **registry workspace** (a separate repo from
-your app), not inside your consumer app. Each component there is a small
-package with a `contract.json` (version, delivery type, target environments)
-and a `src/index.tsx` entry — for example the registry's own `shadcn:button`
-wrapper is just:
-
-```tsx
-// src/index.tsx
-export { Button as default } from "@workspace/ui";
-```
-
-This is a platform-team workflow, not something most app builders need day to
-day — if you find yourself reaching for it, talk to the platform team first.
+That's authored and published in `heron_registry` — a separate,
+platform-level workspace, not something you do inside your app. See
+[How to Add a Component to `heron_registry`](/docs/guides/setup/add-a-component-to-heron-registry).

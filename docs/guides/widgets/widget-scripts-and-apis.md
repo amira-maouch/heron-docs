@@ -1,5 +1,5 @@
 ---
-sidebar_position: 2
+sidebar_position: 6
 ---
 
 # Widget Scripts & APIs
@@ -23,7 +23,7 @@ export default myScript;
 | `emit(event, data?)`              | Emit a public event from this widget                                                                      |
 | `t(key, options?)`                | Translate against this widget's `translations/_self/`                                                     |
 | `listen(handlers)`                | Bulk-attach DOM handlers to a child                                                                       |
-| `can(action, subject, resource?)` | Authorization check — see [Authentication & Authorization](/docs/guides/authentication-and-authorization) |
+| `can(action, subject, resource?)` | Authorization check — see [Authentication & Authorization](/docs/guides/backend-and-auth/authentication-and-authorization) |
 
 Real usage, `bootstrap_app`'s dashboard widget:
 
@@ -74,7 +74,7 @@ $egret.i18n.loadNamespaces(["components", "validation", "errors"]);
 
 `getService`/`hasService` (table above) is how a script reaches an app-wide
 singleton — a backend client, most commonly. See
-[Services](/docs/guides/services) for how a service gets vendored,
+[Services](/docs/guides/setup/services) for how a service gets vendored,
 initialized, and called.
 
 ## Toasts

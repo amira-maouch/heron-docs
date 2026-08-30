@@ -11,7 +11,7 @@ what stabilizes the app: the providers it holds mount once and never remount
 as you navigate, so app-wide state (toasts, dialogs, the active language)
 survives route changes instead of resetting.
 
-This is different from a regular [layout](/docs/guides/how-to-add-a-layout) —
+This is different from a regular [layout](/docs/guides/widgets/how-to-add-a-layout) —
 you don't choose to use the root widget, and you don't reference it from
 `app-manifest.json`. It's always there.
 
@@ -86,7 +86,7 @@ flag gate), add it as a new child in `widgets/root/metadata.json`, wrapping
 to be outside or inside the providers already there.
 
 :::caution Don't put page-specific UI here
-Anything route-specific belongs in a page widget or a [layout](/docs/guides/how-to-add-a-layout),
+Anything route-specific belongs in a page widget or a [layout](/docs/guides/widgets/how-to-add-a-layout),
 not root. Root renders on every single page, including ones a `layout`
 wouldn't otherwise touch (error pages, auth pages) — keep it to things that
 truly are global.
@@ -100,5 +100,5 @@ in root's metadata directly. See [App Structure § `themes/`](/docs/heron/app-st
 
 ## Next
 
-Now that you know what always wraps every page, [How to Add a Layout](/docs/guides/how-to-add-a-layout)
+Now that you know what always wraps every page, [How to Add a Layout](/docs/guides/widgets/how-to-add-a-layout)
 covers the layer you *do* choose per-route.

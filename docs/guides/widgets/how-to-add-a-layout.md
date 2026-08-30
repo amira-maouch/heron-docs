@@ -5,7 +5,7 @@ sidebar_position: 4
 # How to Add a Layout
 
 A layout is chrome — header, sidebar, footer — shared by a group of routes.
-Unlike the [root layout](/docs/guides/root-layout) (always on, every route),
+Unlike the [root layout](/docs/guides/widgets/root-layout) (always on, every route),
 a layout is opt-in: you attach it to specific routes via `app-manifest.json`.
 
 ## 1. Create the widget
@@ -106,5 +106,5 @@ different, fullscreen layout — it sets its own `layout` **and**
 `overrideLayout: true` to break out of the inherited one rather than nesting
 inside it.
 
-See [How to Add a Route](/docs/guides/how-to-add-a-route) for the rest of the
+See [How to Add a Route](/docs/guides/widgets/how-to-add-a-route) for the rest of the
 routing model (dynamic segments, `appPathPrefix`, 404s, gating with `can`).

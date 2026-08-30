@@ -1,11 +1,11 @@
 ---
-sidebar_position: 9
+sidebar_position: 10
 ---
 
 # How to Add a Server Action
 
 A server action is server-only logic a widget can call **on demand** (a
-button click, a form submit) — unlike a [data loader](/docs/guides/widget-data-loaders),
+button click, a form submit) — unlike a [data loader](/docs/guides/widgets/widget-data-loaders),
 which only runs once, at render time.
 
 ## 1. Declare it in `server.ts`
@@ -43,7 +43,7 @@ export const actions = defineActions({
   with `required`, length/range bounds, `enum`) validated **before** `fn`
   runs. Reject bad input here, not inside `fn`.
 - `can` — an extra permission check on top of whatever the route/widget
-  already gates. See [Authorization Checks](/docs/guides/authorization-checks).
+  already gates. See [Authorization Checks](/docs/guides/backend-and-auth/authorization-checks).
 - `rateLimit` — `{ windowMs, max }`, enforced server-side automatically.
 - `fn` gets an `ActionContext`: everything `ServerContext` has (`session`,
   `egret.apiBase`, ...) plus `ctx.args` (validated input), `ctx.getUser()`,
@@ -91,6 +91,6 @@ side. Calling an action name that isn't declared throws immediately
 
 | | Runs when | Use for |
 |---|---|---|
-| [Data loader](/docs/guides/widget-data-loaders) | Once, at render | Pre-fetching what the page needs to show |
+| [Data loader](/docs/guides/widgets/widget-data-loaders) | Once, at render | Pre-fetching what the page needs to show |
 | Server action | On demand (click, submit) | A mutation that must run server-side (server-only secrets, `can` re-checked server-side, rate-limited) |
-| [`egretClient` from `script.ts`](/docs/guides/how-to-wire-egret-backend) | On demand, client-side | Everything else — most reads and writes just call your backend directly |
+| [`egretClient` from `script.ts`](/docs/guides/backend-and-auth/how-to-wire-egret-backend) | On demand, client-side | Everything else — most reads and writes just call your backend directly |

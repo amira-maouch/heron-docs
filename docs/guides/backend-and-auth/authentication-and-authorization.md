@@ -1,5 +1,5 @@
 ---
-sidebar_position: 16
+sidebar_position: 2
 ---
 
 # Authentication & Authorization
@@ -53,7 +53,7 @@ The reason it's necessary once you have real permissions/roles: a Heron app
 doesn't just render a page once — the server also handles the requests that
 fetch widgets, scripts, and actions on their own (see
 [App Structure](/docs/heron/app-structure) and
-[How to Add a Server Action](/docs/guides/server-actions)). For `can` to
+[How to Add a Server Action](/docs/guides/widgets/server-actions)). For `can` to
 correctly prune a widget tree or protect a server action, **the server**
 needs to know who's asking and what they're allowed to do — not just the
 browser. Option A's client-side token (stored in `localStorage`) never
@@ -131,4 +131,4 @@ about the adapter contract stays the same.
 | Setup effort | Low | Higher, but framework-managed |
 
 Once permissions are loaded (either option), gate UI with `$egret.auth` — see
-[Authorization Checks](/docs/guides/authorization-checks).
+[Authorization Checks](/docs/guides/backend-and-auth/authorization-checks).

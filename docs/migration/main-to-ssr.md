@@ -27,10 +27,10 @@ need faster first paint or crawlable pages for some routes.
   `robots.txt`/`sitemap.xml` — see [Adding SEO to Pages](/docs/guides/ssr/seo).
 - Server actions (`packages/app-runtime-core/src/serverActions/`) — a new way
   to call server-side logic from a widget without a full API route. See
-  [How to Add a Server Action](/docs/guides/server-actions).
+  [How to Add a Server Action](/docs/guides/widgets/server-actions).
 - `$select`/`cases` metadata expressions — declarative, server-renderable
   branching on locale/theme/route state directly in `metadata.json`. See
-  [`$select` and `cases`](/docs/guides/metadata-expressions).
+  [`$select` and `cases`](/docs/guides/widgets/metadata-expressions).
 - Widget HMR rework (`widgetHmr/`) — faster dev-server reloads, no app changes
   needed.
 - Extensive new test coverage for the SSR path — nothing you need to write
@@ -148,7 +148,7 @@ const getDocumentDir = (): "ltr" | "rtl" => {
 ```
 
 The SSR-safe fix is to move that decision into metadata, using
-[`$select`/`cases`](/docs/guides/metadata-expressions) against `$i18n.direction`
+[`$select`/`cases`](/docs/guides/widgets/metadata-expressions) against `$i18n.direction`
 instead — this resolves identically on the server and the client, no
 hydration flash:
 
@@ -166,7 +166,7 @@ just to branch on locale, theme, or a route param, check whether
 ### 6. Add loaders where you want server-fetched data
 
 `server.ts` next to that widget's `metadata.json` — see
-[How to Add a Widget Data Loader](/docs/guides/widget-data-loaders).
+[How to Add a Widget Data Loader](/docs/guides/widgets/widget-data-loaders).
 
 ### 7. Add SEO fields for that route
 

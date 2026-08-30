@@ -1,5 +1,5 @@
 ---
-sidebar_position: 13
+sidebar_position: 4
 ---
 
 # How to Create a Middleware
@@ -69,5 +69,5 @@ const authGuard = async (context: any, next: any, block: any) => {
 token-refresh call. Put shared setup at a higher priority number than
 anything that depends on it.
 
-See [Authentication & Authorization](/docs/guides/authentication-and-authorization)
+See [Authentication & Authorization](/docs/guides/backend-and-auth/authentication-and-authorization)
 for the full auth-guard pattern.

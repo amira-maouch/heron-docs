@@ -1,5 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 2
 ---
 
 # How to Add a Route
@@ -19,12 +19,12 @@ Routes live in `app-manifest.json`. Each entry maps a URL slug to a widget.
 
 `https://yourapp/<appPathPrefix>/dashboard` renders
 `widgets/pages/dashboard/metadata.json`, wrapped inside the always-on
-`widgets/root` (see [The Root Layout](/docs/guides/root-layout) — every route
+`widgets/root` (see [The Root Layout](/docs/guides/widgets/root-layout) — every route
 gets this automatically, nothing to configure here).
 
 You can also wrap a route in a named `layout` (shared header/sidebar/footer
 chrome) — that's the next guide,
-[How to Add a Layout](/docs/guides/how-to-add-a-layout), once you know what a
+[How to Add a Layout](/docs/guides/widgets/how-to-add-a-layout), once you know what a
 route is.
 
 ## `appPathPrefix`
@@ -64,10 +64,10 @@ longer exact matches win over shorter/prefix ones.
 }
 ```
 
-See [Authentication & Authorization](/docs/guides/authentication-and-authorization).
+See [Authentication & Authorization](/docs/guides/backend-and-auth/authentication-and-authorization).
 
 ## Next
 
 Routes can also nest, and inherit or override a layout — that builds on
-[How to Add a Layout](/docs/guides/how-to-add-a-layout), so it's covered
+[How to Add a Layout](/docs/guides/widgets/how-to-add-a-layout), so it's covered
 there once layouts make sense.

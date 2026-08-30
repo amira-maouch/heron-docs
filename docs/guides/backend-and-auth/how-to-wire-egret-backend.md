@@ -1,5 +1,5 @@
 ---
-sidebar_position: 15
+sidebar_position: 1
 ---
 
 # How to Wire Heron to an Egret Backend

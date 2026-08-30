@@ -1,5 +1,5 @@
 ---
-sidebar_position: 8
+sidebar_position: 9
 ---
 
 # How to Add a Widget Data Loader
@@ -106,4 +106,4 @@ Return a `seoSource` (or explicit `seo`) object alongside your data — see
 
 A loader only runs when the page renders. For something a user triggers (a
 button click that needs to run server-side, not just read data) — see
-[How to Add a Server Action](/docs/guides/server-actions).
+[How to Add a Server Action](/docs/guides/widgets/server-actions).

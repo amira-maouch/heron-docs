@@ -47,9 +47,9 @@ needs to reach it directly:
 
 - `"t:pages/my-feature.save"` pulls from this widget's own
   `translations/_self/{locale}.json` — see
-  [How to Add Translations](/docs/guides/how-to-add-translations).
+  [How to Add Translations](/docs/guides/widgets/how-to-add-translations).
 - `component` values like `shadcn:shadcn:button` must already be vendored —
-  see [How to Add a Component to the Registry](/docs/guides/how-to-add-a-component-to-the-registry).
+  see [How to Add a Component to the Registry](/docs/guides/setup/vendor-a-registry-component).
 
 ## 3. Wire up behavior (optional)
 
@@ -65,7 +65,7 @@ const myFeatureScript = ($egret: any, $self: any) => {
 export default myFeatureScript;
 ```
 
-Full API surface: [Widget Scripts & APIs](/docs/guides/widget-scripts-and-apis).
+Full API surface: [Widget Scripts & APIs](/docs/guides/widgets/widget-scripts-and-apis).
 
 ## 4. Register a route
 
@@ -79,11 +79,11 @@ Widgets aren't routable on their own — add an entry to `app-manifest.json`:
 }
 ```
 
-See [How to Add a Route](/docs/guides/how-to-add-a-route) next. (Don't worry
+See [How to Add a Route](/docs/guides/widgets/how-to-add-a-route) next. (Don't worry
 about the `layout` field yet — that's covered right after.)
 
 ## Not every screen needs a new widget
 
 If the UI is only ever used inside one existing page, it may not need to be
 its own widget at all — see
-[Component vs. Subtree vs. Widget](/docs/guides/component-vs-subtree-vs-widget).
+[Component vs. Subtree vs. Widget](/docs/guides/widgets/component-vs-subtree-vs-widget).

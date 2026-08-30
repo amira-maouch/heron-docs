@@ -1,12 +1,12 @@
 ---
-sidebar_position: 14
+sidebar_position: 3
 ---
 
 # Services
 
 A service is an app-wide singleton reachable from any widget script via
 `$egret.getService(name)` — a backend client is the most common example, but
-the mechanism is generic. Like [registry components](/docs/guides/how-to-add-a-component-to-the-registry),
+the mechanism is generic. Like [registry components](/docs/guides/setup/vendor-a-registry-component),
 services are published in a registry and vendored into your app; unlike
 components, you also have to explicitly initialize one with config before
 it's usable.
@@ -24,14 +24,14 @@ it's usable.
 
 Same mechanism as vendoring a component — the resolved version gets pinned
 into `.bundle-lock.json` on build. See
-[How to Add a Component to the Registry](/docs/guides/how-to-add-a-component-to-the-registry)
+[How to Add a Component to the Registry](/docs/guides/setup/vendor-a-registry-component)
 for the full vendoring model (registries, coverage rules).
 
 ## 2. Initialize it, once, in a middleware
 
 Vendoring makes the service's *factory* available; your app still owns
 constructing it with real config. Do this once, in a
-[middleware](/docs/guides/how-to-create-a-middleware) — real example:
+[middleware](/docs/guides/setup/how-to-create-a-middleware) — real example:
 
 ```ts
 // middlewares/services.ts
@@ -71,13 +71,13 @@ await client.listDocuments("contracting.contract", { pageLength: 20 });
 vendored via `bundle-manifest.json` (`egret-ui/core/egret-client`),
 initialized once with `apiBaseUrl` from an env var, then called from any
 widget script with `runCommand`/`runQuery`/`listDocuments`/etc. See
-[How to Wire Heron to an Egret Backend](/docs/guides/how-to-wire-egret-backend)
+[How to Wire Heron to an Egret Backend](/docs/guides/backend-and-auth/how-to-wire-egret-backend)
 for its full API surface — this guide covers the general services mechanism
 that `egretClient` happens to be the most common instance of.
 
 ## Not what you need?
 
 - One-off server-side logic triggered by a user action →
-  [How to Add a Server Action](/docs/guides/server-actions).
+  [How to Add a Server Action](/docs/guides/widgets/server-actions).
 - Data needed before first render, not on-demand →
-  [How to Add a Widget Data Loader](/docs/guides/widget-data-loaders).
+  [How to Add a Widget Data Loader](/docs/guides/widgets/widget-data-loaders).
