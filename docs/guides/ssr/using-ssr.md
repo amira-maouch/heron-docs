@@ -5,11 +5,13 @@ title: Using SSR
 
 # Using SSR
 
-:::caution Not on `main` yet
+:::caution[Not on `main` yet]
+
 SSR ships on the `874-add-ssr-support-to-heron` branch. If your app is built
 against `main`, none of this applies yet — see the
 [main → SSR migration guide](/docs/migration/main-to-ssr) when you're ready to
 move.
+
 :::
 
 ## When to use it

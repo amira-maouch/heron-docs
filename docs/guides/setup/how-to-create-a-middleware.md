@@ -8,10 +8,12 @@ Middlewares in `middlewaresDir` (set in `app.config.ts`) run on the
 **browser-side page lifecycle** — before a page renders on navigation. This is
 not an HTTP/Express middleware; it's a client-side navigation guard.
 
-:::info Two different "middleware" concepts
+:::info[Two different "middleware" concepts]
+
 Heron also has SSR-side Express middleware (for the production HTML
 document). That's unrelated and covered in [Using SSR](/docs/guides/ssr/using-ssr).
 This guide is about the page-lifecycle kind, in your app's `middlewares/` folder.
+
 :::
 
 ## The shape

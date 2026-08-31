@@ -30,10 +30,12 @@ After adding an entry, rebuild — the resolved versions get written to
 `.bundle-lock.json`, and the component becomes usable in any widget's
 `metadata.json` by its `registry:namespace:type` id.
 
-:::caution Coverage pitfall
+:::caution[Coverage pitfall]
+
 No key in `bundle-manifest.json` may be an ancestor of another (e.g.
 `"shadcn"` **and** `"shadcn/ui"` both present) — that's a build error, not a
 merge. Pick one level of specificity per registry.
+
 :::
 
 ## Finding what's already available

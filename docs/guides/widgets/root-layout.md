@@ -85,11 +85,13 @@ flag gate), add it as a new child in `widgets/root/metadata.json`, wrapping
 (or wrapped by) the existing `page-outlet` slot depending on whether it needs
 to be outside or inside the providers already there.
 
-:::caution Don't put page-specific UI here
+:::caution[Don't put page-specific UI here]
+
 Anything route-specific belongs in a page widget or a [layout](/docs/guides/widgets/how-to-add-a-layout),
 not root. Root renders on every single page, including ones a `layout`
 wouldn't otherwise touch (error pages, auth pages) — keep it to things that
 truly are global.
+
 :::
 
 ## Theme

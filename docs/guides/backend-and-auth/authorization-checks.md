@@ -4,11 +4,13 @@ sidebar_position: 3
 
 # Authorization Checks
 
-:::info No `<Can>` component
+:::info[No `<Can>` component]
+
 If you're looking for a `<Can>` JSX wrapper — it doesn't exist in Heron.
 Authorization is a declarative `"can"` property on metadata nodes, plus an
 imperative `$egret.auth` / `$self.can()` API. This page covers the real
 mechanism.
+
 :::
 
 ## Gating a node declaratively

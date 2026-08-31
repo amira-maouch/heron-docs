@@ -8,10 +8,12 @@ A widget can have its own `styles.css`, next to `metadata.json`. This is for
 CSS that utility classes in `className` props can't express cleanly — it's
 not where most styling should live.
 
-:::info Setting up the CSS library itself
+:::info[Setting up the CSS library itself]
+
 This page is about the per-widget file. For installing/configuring Tailwind,
 Bootstrap, or another library so `className` works at all, see
 [Styling Libraries](/docs/guides/styles/tailwind).
+
 :::
 
 ## When to reach for it
