@@ -8,7 +8,10 @@ title: Adding SEO to Pages
 SEO metadata resolves from four sources, each overriding the one before it,
 then gets written into `<head>` at render time. `canonical` and `robots` are
 the one exception — they're capped at the **Static** layer no matter what, so
-request-derived data can never make protected content indexable.
+request-derived data can never make protected content indexable. Any string
+value (Static or Custom) can also be a `t:ns.key` translation reference,
+resolved per-request — see [Translated SEO strings](#translated-seo-strings)
+below.
 
 | Source | Where it comes from | Priority |
 |---|---|---|
@@ -96,6 +99,39 @@ export async function loader(ctx: ServerContext) {
 This wins over both the Dynamic and Static layers for the fields it sets
 (again, except `canonical`/`robots`, which never come from a loader).
 
+## Translated SEO strings
+
+`title`, `description`, each `keywords` entry, and any `openGraph`/`twitter`
+value can be written as a `t:ns.key` reference — the same convention used
+everywhere else in metadata — in Static (`app-manifest.json`) or Custom
+(loader-returned `seo`) values. It resolves against the current request's
+locale automatically:
+
+```json
+// app-manifest.json
+"routes": {
+  "products/:id": {
+    "widget": "pages/product",
+    "seo": { "title": "t:seo.product_list_title" }
+  }
+}
+```
+
+```json
+// translations/seo/en.json (any app-level namespace works — this one's just descriptive)
+{ "product_list_title": "Our Products" }
+```
+
+```json
+// translations/seo/ar.json
+{ "product_list_title": "منتجاتنا" }
+```
+
+App-level `translations/*` folders all load unconditionally for every SSR
+request, so a dedicated `seo` namespace works with no extra wiring — reusing
+an existing one like `_default` works too. `canonical` and `robots` are never
+translated (they're policy/URLs, not display text); `image` isn't either.
+
 ## robots.txt and sitemap.xml
 
 Generated automatically from your manifest — a route is excluded from the
@@ -103,17 +139,11 @@ sitemap if it has a `can` declaration (authenticated) or sets
 `"seo": { "index": false }`. Non-production environments always serve
 `Disallow: /` in `robots.txt`, so staging never gets indexed by accident.
 
-## What's not confirmed yet
+## What's not supported yet
 
 No structured data / JSON-LD (`application/ld+json`) generation exists in the
-code as of this writing. Per-key **translated** SEO strings (so a page's
-title/description differ by locale automatically) aren't wired into the SEO
-resolver yet either, as far as could be verified against the current SSR
-branch — the underlying per-request locale/translation infrastructure exists,
-it just isn't connected to this path. If you need locale-specific SEO text
-today, derive it yourself in the loader (e.g. read the locale from wherever
-your app already tracks it, and pick a title/description manually) rather
-than assuming a `t:`-style key works here — it doesn't yet.
+code as of this writing — track it as a gap if a page needs recipe/product/
+article schema.
 
 ## Verifying it
 
