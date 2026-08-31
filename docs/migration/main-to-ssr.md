@@ -18,22 +18,22 @@ need faster first paint or crawlable pages for some routes.
 
 ## What's new
 
-| Feature | What it gives you | Guide |
-|---|---|---|
-| Server-side rendering | Real HTML on first response, not just an empty shell | [Using SSR](/docs/guides/ssr/using-ssr) |
-| `renderMode: "client-only"` + `placeholder` | A way to mark browser-only widgets so SSR degrades gracefully | [CSR Placeholders](/docs/guides/ssr/csr-placeholders) |
-| Dynamic SEO + `robots.txt`/`sitemap.xml` | Title/meta/canonical/OG/Twitter resolved per request | [Adding SEO to Pages](/docs/guides/ssr/seo) |
-| Server actions | Call server-only logic on demand from a widget, no API route needed | [How to Add a Server Action](/docs/guides/widgets/server-actions) |
-| `$select`/`cases` metadata expressions | Declarative, server-renderable branching in `metadata.json` | [`$select` and `cases`](/docs/guides/widgets/metadata-expressions) |
-| Widget HMR rework | Faster dev-server reloads | — no app changes needed |
+| Feature                                     | What it gives you                                                   | Guide                                                              |
+| ------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Server-side rendering                       | Real HTML on first response, not just an empty shell                | [Using SSR](/docs/guides/ssr/using-ssr)                            |
+| `renderMode: "client-only"` + `placeholder` | A way to mark browser-only widgets so SSR degrades gracefully       | [CSR Placeholders](/docs/guides/ssr/csr-placeholders)              |
+| Dynamic SEO + `robots.txt`/`sitemap.xml`    | Title/meta/canonical/OG/Twitter resolved per request                | [Adding SEO to Pages](/docs/guides/ssr/seo)                        |
+| Server actions                              | Call server-only logic on demand from a widget, no API route needed | [How to Add a Server Action](/docs/guides/widgets/server-actions)  |
+| `$select`/`cases` metadata expressions      | Declarative, server-renderable branching in `metadata.json`         | [`$select` and `cases`](/docs/guides/widgets/metadata-expressions) |
+| Widget HMR rework                           | Faster dev-server reloads                                           | — no app changes needed                                            |
 
 ## Breaking changes to check
 
-| Area | What changed | What to check in your app |
-|---|---|---|
-| `app-manifest.json` | Routes gained optional `ssr` and `seo` fields | Nothing — existing manifests stay valid as-is |
-| `AuthAdapter` | Gained SSR-aware fields (cookie handling) | Diff your adapter against the updated type if you have a custom one |
-| `$egret` internals | Auth store, i18n, and lifecycle gained SSR-scoped variants | Only matters if you call low-level internals directly, not `$self`/documented `$egret` methods |
+| Area                | What changed                                               | What to check in your app                                                                      |
+| ------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `app-manifest.json` | Routes gained optional `ssr` and `seo` fields              | Nothing — existing manifests stay valid as-is                                                  |
+| `AuthAdapter`       | Gained SSR-aware fields (cookie handling)                  | Diff your adapter against the updated type if you have a custom one                            |
+| `$egret` internals  | Auth store, i18n, and lifecycle gained SSR-scoped variants | Only matters if you call low-level internals directly, not `$self`/documented `$egret` methods |
 
 Nothing in this diff renames or removes an existing `$self`/`$egret` method
 used by widget scripts — the change surface is almost entirely new, opt-in
@@ -55,14 +55,14 @@ Install the packages your app uses from that tag instead of a normal semver
 range:
 
 ```bash
-pnpm add @heron-ws/app-runtime@ssr @heron-ws/component-api@ssr @heron-ws/i18n@ssr
+pnpm add @heron-ws/app-runtime@ssr @heron-ws/component-api@ssr
 ```
 
-The same `@ssr` tag applies to the other `@heron-ws/*` packages this branch
-touches (`app-runtime-core`, `app-runtime-server`, `page-engine`,
-`page-engine-components`, `component-registry`, `utils`) — they're published
-together as part of the same release. Only `app-runtime`'s exact version was
-directly confirmed above; the rest follow the same tag.
+or change the version in package.json like:
+
+```json
+"@heron-ws/app-runtime": "0.0.0-ssr-20260828134038"
+```
 
 ### 2. Add the `build:ssr` step
 
@@ -94,7 +94,7 @@ Linking it from `index.html` instead avoids that.
 
 ### 4. Leave `ssr` unset and verify nothing broke
 
-Deploy with no `ssr` block in `app.config.ts` at all. Your app should behave
+Your app should behave
 identically to `main` — this is your regression baseline before opting into
 anything.
 
@@ -165,11 +165,6 @@ SSR routes coexist in the same app indefinitely.
 
 ### 10. Test it
 
-- `pnpm test:ssr-import` — confirms the server bundle never touches browser
-  globals.
-- `pnpm test` — full suite, including SSR-path tests
-  (`resolvePageRequest.*`, `widgets.parity.test.ts` compares SSR vs CSR
-  output for parity).
 - Manually, per migrated route: View Page Source, disable JS and reload,
   `curl` the route directly. Full checklist:
   [Using SSR § Testing SSR locally](/docs/guides/ssr/using-ssr#testing-ssr-locally).
