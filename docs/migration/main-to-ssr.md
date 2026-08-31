@@ -195,26 +195,13 @@ Leave `languages` unset (the normal case) and it uses `app.config.ts`'s
 Your app should behave identically to `main` — this is your regression
 baseline before opting into anything.
 
-### 6. Turn on SSR for one low-risk route
+### 6. Audit a route, then turn on SSR for it
 
-```ts
-// app.config.ts
-ssr: { enabled: true, default: false, abortTimeoutMs: 10_000 },
-```
-
-```json
-// app-manifest.json
-"about": { "widget": "pages/about", "ssr": true }
-```
-
-Pick a simple, public, non-authenticated page first. See
+Pick one route to migrate first — simple, public, non-authenticated. See
 [Using SSR § When to use it](/docs/guides/ssr/using-ssr#when-to-use-it) for
-how to decide which routes deserve SSR at all.
-
-### 7. Audit that route
-
-Work through it in this order — each layer only matters once the one before
-it checks out:
+how to decide which routes deserve SSR at all. Before touching
+`app-manifest.json`, audit it in this order — each layer only matters once
+the one before it checks out:
 
 **a) Components.** For every registry component (`shadcn:*`, `ui:*`,
 `egret-ui:*`, ...) used anywhere in the route's widget tree, check its
@@ -280,26 +267,39 @@ just to branch on locale, theme, or a route param, check whether
 [CSR Placeholders](/docs/guides/ssr/csr-placeholders) for when you
 genuinely can't avoid client-only).
 
-**c) Flip it on and check.** Set `"ssr": true` on the route and view page
-source — real content should be there, not a loading state or a
+**c) Flip it on and check.** Only now, with (a) and (b) both clean, turn SSR
+on — app-wide first, then this one route:
+
+```ts
+// app.config.ts
+ssr: { enabled: true, default: false, abortTimeoutMs: 10_000 },
+```
+
+```json
+// app-manifest.json
+"about": { "widget": "pages/about", "ssr": true }
+```
+
+View page source — real content should be there, not a loading state or a
 placeholder. If something still shows a placeholder, it means step (a) or
 (b) above missed something in that specific node.
 
-### 8. Add loaders where you want server-fetched data
+### 7. Add loaders where you want server-fetched data
 
 `server.ts` next to that widget's `metadata.json` — see
 [How to Add a Widget Data Loader](/docs/guides/widgets/widget-data-loaders).
 
-### 9. Add SEO fields for that route
+### 8. Add SEO fields for that route
 
 See [Adding SEO to Pages](/docs/guides/ssr/seo).
 
-### 10. Expand route by route
+### 9. Expand route by route
 
-Repeat steps 6–9. There's no requirement to migrate every route — CSR and
-SSR routes coexist in the same app indefinitely.
+Repeat step 6 (audit, then flip on) for each next route. There's no
+requirement to migrate every route — CSR and SSR routes coexist in the same
+app indefinitely.
 
-### 11. Test it
+### 10. Test it
 
 - Manually, per migrated route: View Page Source, disable JS and reload,
   `curl` the route directly. Full checklist:

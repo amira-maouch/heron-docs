@@ -21,5 +21,8 @@ sidebar_position: 1
 - **Remember: no JSON-LD support yet.** If a page needs structured data
   (recipe, product, article schema), that's not covered by the built-in SEO
   resolver — track it as a gap, don't assume it's handled.
+- **Don't assume SEO strings translate automatically.** Nothing in the
+  resolver applies per-locale translation to `title`/`description` today —
+  if you need locale-specific SEO text, derive it yourself in the loader.
 - **Non-production always disallows crawling.** Don't manually add
   `robots.txt` overrides per environment — this is already handled.
