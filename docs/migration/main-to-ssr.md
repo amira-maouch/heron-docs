@@ -92,13 +92,110 @@ Importing CSS from `main.tsx` (the old pattern) means the very first
 server-rendered paint can flash unstyled before the client bundle applies it.
 Linking it from `index.html` instead avoids that.
 
-### 4. Leave `ssr` unset and verify nothing broke
+### 4. Update your i18n setup
 
-Your app should behave
-identically to `main` — this is your regression baseline before opting into
-anything.
+This one is easy to miss but the app doesn't work correctly without it —
+i18n moved from per-widget config to a centralized, SSR-aware API. Four
+changes, all real (this is an in-progress diff pulled directly from
+`alefbab_app`):
 
-### 5. Turn on SSR for one low-risk route
+**a) Move locale config to `app.config.ts`.** The old config lived as a
+`props.config` block on the root widget's `i18n-provider` node, with a full
+descriptor per language:
+
+```json
+// widgets/root/metadata.json — REMOVE this entire props block
+{
+  "component": "ui:layout:i18n-provider",
+  "id": "language-provider",
+  "props": {
+    "config": {
+      "fallbackLanguage": "en",
+      "supportedLanguages": [
+        { "code": "en", "name": "English", "flag": "🇺🇸", "direction": "ltr", "nativeName": "English" },
+        { "code": "ar", "name": "العربية", "flag": "🇸🇦", "direction": "rtl", "nativeName": "العربية" }
+      ]
+    }
+  }
+}
+```
+
+Delete that `props` block entirely — `i18n-provider` takes no config now.
+Add the same information to `app.config.ts` instead, as plain BCP-47 codes:
+
+```ts
+// app.config.ts
+localization: {
+  defaultLocale: "en",
+  fallbackLocale: "en",
+  supportedLocales: ["en", "ar"],
+},
+```
+
+You don't need to specify name/flag/native name/direction anymore — those
+get derived automatically from the BCP-47 code (including regional variants,
+e.g. `fr-CA` resolves its own flag and native name).
+
+**b) Update `widgets/root/script.ts`.** If your root script reached into
+`window.__EGRET_SHARED__` directly to load extra translation namespaces,
+replace that with the centralized API:
+
+```ts
+// before
+const shared = (window as { __EGRET_SHARED__?: any }).__EGRET_SHARED__;
+const i18n = shared?.ReactI18next?.getI18n?.() ?? shared?.I18n?.getI18nInstance?.();
+if (!i18n) return;
+// ...manual fetch("/api/translations/_ns/...") + i18n.addResourceBundle(...)
+
+// after
+const rootScript = ($egret: EgretRuntime) => {
+  void $egret.i18n.loadNamespaces(["components", "validation", "errors"]);
+};
+```
+
+**c) Add the type for IntelliSense**, in `widgets/egret-globals.d.ts`:
+
+```ts
+interface EgretLanguageAPI {
+  readonly locale: string;
+  readonly direction: "ltr" | "rtl";
+  readonly languages: ReadonlyArray<{ code: string; name: string; nativeName?: string; flag?: string; direction: "ltr" | "rtl" }>;
+  t(key: string, options?: Record<string, unknown>): string;
+  changeLanguage(locale: string): Promise<void>;
+  loadNamespaces(namespaces: readonly string[]): Promise<void>;
+  subscribe(listener: (locale: string) => void): () => void;
+}
+
+interface EgretRuntime {
+  // ...
+  readonly i18n: EgretLanguageAPI;
+}
+```
+
+**d) Overriding the displayed language list.** If some specific
+`ui:core:language-dropdown` needs a different set of languages than
+`app.config.ts` declares (a custom subset, custom labels), pass a
+`languages` prop directly on that component instance — it overrides the
+central list only for that one dropdown:
+
+```json
+{
+  "component": "ui:core:language-dropdown",
+  "props": {
+    "languages": [{ "code": "fr-CA", "name": "Québécois", "flag": "⚜️" }]
+  }
+}
+```
+
+Leave `languages` unset (the normal case) and it uses `app.config.ts`'s
+`supportedLocales` automatically.
+
+### 5. Leave `ssr` unset and verify nothing broke
+
+Your app should behave identically to `main` — this is your regression
+baseline before opting into anything.
+
+### 6. Turn on SSR for one low-risk route
 
 ```ts
 // app.config.ts
@@ -114,56 +211,95 @@ Pick a simple, public, non-authenticated page first. See
 [Using SSR § When to use it](/docs/guides/ssr/using-ssr#when-to-use-it) for
 how to decide which routes deserve SSR at all.
 
-### 6. Audit that route for browser-only code
+### 7. Audit that route
 
-Anything using `window`, `document`, `localStorage`, or a browser-only
-library needs a server-safe fallback, or `renderMode: "client-only"` +
-`placeholder` (see [CSR Placeholders](/docs/guides/ssr/csr-placeholders)).
+Work through it in this order — each layer only matters once the one before
+it checks out:
 
-Left unaddressed, SSR doesn't error — that part of the tree just silently
-renders its placeholder (or an empty box) instead of real content, which is
-easy to miss in a quick check.
+**a) Components.** For every registry component (`shadcn:*`, `ui:*`,
+`egret-ui:*`, ...) used anywhere in the route's widget tree, check its
+`contract.json`. If `environment` doesn't include `"universal"`, that
+component is **not SSR-safe** — full stop, regardless of what its widget
+script does:
 
-**A real fix, worth knowing as a pattern.** `alefbab_app`'s sidebar decides
-its LTR/RTL docking side by reading `document.documentElement`'s `dir`
-attribute in `script.ts`:
+```json
+{ "environment": ["universal"] }
+```
+
+**b) Widgets.** Once every component in the tree is universal, check the
+widgets' own `script.ts` files for anything that affects **first paint** —
+reading `document`/`window`/`localStorage` outside an event handler (event
+handlers never run during SSR, so they don't count).
+
+A real example of this exact problem and its fix. `alefbab_app`'s sidebar
+(not yet SSR-enabled) decides its LTR/RTL docking side by reading
+`document.documentElement`'s `dir` attribute in `script.ts`, then watches it
+with a `MutationObserver` to react to language changes:
 
 ```ts
-// client-only — document doesn't exist on the server
+// alefbab_app/widgets/shell/sidebar-menu/script.ts — CSR-only, not SSR-safe
 const getDocumentDir = (): "ltr" | "rtl" => {
   if (typeof document === "undefined") return "ltr";
   return document.documentElement.getAttribute("dir") === "rtl" ? "rtl" : "ltr";
 };
+
+const syncSidebarDirection = () => {
+  const dir = getDocumentDir();
+  appSidebar?.setProps({ dir, side: dir === "rtl" ? "right" : "left" });
+};
+
+syncSidebarDirection();
+new MutationObserver(/* re-run syncSidebarDirection on dir changes */).observe(
+  document.documentElement,
+  { attributes: true, attributeFilter: ["dir"] },
+);
 ```
 
-That can't resolve during SSR — it defaults to `"ltr"` and only corrects
-itself after hydration. The SSR-safe fix moves the same decision into
-metadata with [`$select`/`cases`](/docs/guides/widgets/metadata-expressions),
-which resolves identically on the server and the client:
+This defaults to `"ltr"` on the server (`document` doesn't exist there) and
+only corrects itself after hydration — a visible flash, and not real SSR
+content. `doubleguard-crm` (SSR-enabled) solves the same problem completely
+differently: **delete the script entirely** and express it declaratively in
+`metadata.json` instead:
 
 ```json
-"side": { "$select": "$i18n.direction", "cases": { "ltr": "left", "rtl": "right" } }
+// doubleguard-crm/widgets/shell/sidebar/metadata.json
+"props": {
+  "collapsible": "icon",
+  "variant": "inset",
+  "side": { "$select": "$i18n.direction", "cases": { "ltr": "left", "rtl": "right" } }
+}
 ```
 
-General rule: anywhere a widget reads `document`/`window`/`localStorage` just
-to branch on locale, theme, or a route param, check whether `$select`/`cases`
-can replace it before reaching for `renderMode: "client-only"`.
+That's the entire fix — no `getChild`, no `MutationObserver`, no
+`script.ts` involvement at all. It resolves identically on the server and
+the client, and re-evaluates automatically when the language changes.
+General rule: anywhere a widget reads `document`/`window`/`localStorage`
+just to branch on locale, theme, or a route param, check whether
+`$select`/`cases` can replace it before reaching for
+`renderMode: "client-only"` + `placeholder` (see
+[CSR Placeholders](/docs/guides/ssr/csr-placeholders) for when you
+genuinely can't avoid client-only).
 
-### 7. Add loaders where you want server-fetched data
+**c) Flip it on and check.** Set `"ssr": true` on the route and view page
+source — real content should be there, not a loading state or a
+placeholder. If something still shows a placeholder, it means step (a) or
+(b) above missed something in that specific node.
+
+### 8. Add loaders where you want server-fetched data
 
 `server.ts` next to that widget's `metadata.json` — see
 [How to Add a Widget Data Loader](/docs/guides/widgets/widget-data-loaders).
 
-### 8. Add SEO fields for that route
+### 9. Add SEO fields for that route
 
 See [Adding SEO to Pages](/docs/guides/ssr/seo).
 
-### 9. Expand route by route
+### 10. Expand route by route
 
-Repeat steps 5–8. There's no requirement to migrate every route — CSR and
+Repeat steps 6–9. There's no requirement to migrate every route — CSR and
 SSR routes coexist in the same app indefinitely.
 
-### 10. Test it
+### 11. Test it
 
 - Manually, per migrated route: View Page Source, disable JS and reload,
   `curl` the route directly. Full checklist:
