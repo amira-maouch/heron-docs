@@ -132,6 +132,21 @@ request, so a dedicated `seo` namespace works with no extra wiring — reusing
 an existing one like `_default` works too. `canonical` and `robots` are never
 translated (they're policy/URLs, not display text); `image` isn't either.
 
+:::info[Only app-level namespaces — never a widget's own translations]
+
+A route's `seo` block isn't inside any widget's tree, so there's no "current
+widget" to fall back to. This means `t:key` (no namespace) always resolves
+against `_default` — **it will not pick up a widget's `_self` strings**, even
+for the page's own route. Always give SEO keys an explicit namespace
+(`t:seo.key`, `t:_default.key`, ...) pointing at an app-level
+`translations/<namespace>/` folder. If you want to reuse text a widget
+already has in its own `_self` translations, either duplicate it into an
+app-level namespace, or read it yourself in a `server.ts` loader and return
+it via the [Custom](#custom--explicit-seo-from-a-loader) `seo` object instead
+of a `t:` reference.
+
+:::
+
 ## robots.txt and sitemap.xml
 
 Generated automatically from your manifest — a route is excluded from the
