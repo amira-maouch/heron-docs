@@ -5,12 +5,12 @@ title: Using SSR
 
 # Using SSR
 
-:::caution[Not on `main` yet]
+:::caution[Requires `app-runtime@2.0.0`+]
 
-SSR ships on the `874-add-ssr-support-to-heron` branch. If your app is built
-against `main`, none of this applies yet — see the
-[main → SSR migration guide](/docs/migration/main-to-ssr) when you're ready to
-move.
+SSR ships in `@heron-ws/app-runtime@2.0.0`. If your app is still on the
+`1.13.x` line, none of this applies yet — see the
+[1.13 → 2.0 migration guide](/docs/migration/1.13-to-2.0) when you're ready
+to upgrade.
 
 :::
 

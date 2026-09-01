@@ -40,11 +40,11 @@ const FeatureList = [
   {
     title: 'Migration Guides',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
-    to: '/docs/migration/main-to-ssr',
+    to: '/docs/migration/1.13-to-2.0',
     description: (
       <>
         Step-by-step guides for upgrading between versions, starting with
-        main → the SSR branch.
+        1.13 → 2.0.
       </>
     ),
   },

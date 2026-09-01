@@ -90,7 +90,7 @@ const config = {
               {label: 'App Structure', to: '/docs/heron/app-structure'},
               {label: 'How-To Guides', to: '/docs/guides/running-locally'},
               {label: 'Best Practices', to: '/docs/best-practices/ssr'},
-              {label: 'Migration Guides', to: '/docs/migration/main-to-ssr'},
+              {label: 'Migration Guides', to: '/docs/migration/1.13-to-2.0'},
             ],
           },
         ],
