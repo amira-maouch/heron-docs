@@ -1,0 +1,8 @@
+{
+  "label": "AuthAdapter Examples",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Real, complete authenticate() and loadPermissions() implementations for two different kinds of backend."
+  }
+}

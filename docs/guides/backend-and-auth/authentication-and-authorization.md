@@ -4,66 +4,47 @@ sidebar_position: 2
 
 # Authentication & Authorization
 
-Two real setups exist across our apps — pick based on whether you need
-server-side auth enforcement (SSR, cookie sessions) or a simpler client-side
-setup is enough.
+## Why this exists
 
-## Option A — Direct, client-side (CSR-only apps)
+A Heron app isn't just a page that renders once — the server independently
+handles `/api/widgets`, `/api/scripts`, `/api/components`, every `server.ts`
+loader, and every [server action](/docs/guides/widgets/server-actions). For
+`can` to actually protect any of that (not just hide a button), **the server**
+needs to know who's asking, on every one of those requests — not only the
+browser.
 
-What `alefbab_app` does: no `authorization` block in `app.config.ts` at all.
-Tokens live in `localStorage`; a middleware guards navigation and talks
-straight to the backend's built-in auth endpoints through `egretClient`.
+That's harder than it sounds, because a login widget's own authentication
+request is invisible to the server. `script.ts` is a browser-only bundle —
+it never runs during SSR or when the server handles a widget/script/action
+request — so if a login page logs a user in by calling your backend directly
+from `script.ts`, the server has no way to know that happened. There's
+nothing to check on the next server-side request.
 
-```ts
-// middlewares/auth.ts
-// @Middleware({ target:"page", stage:"route_matched", priority:10 })
-const authGuard = async (context: any, next: any, block: any) => {
-  if (PUBLIC_PAGES.has(context.pageName)) { await next(); return; }
-  let valid = hasFreshAccessToken();
-  if (!valid) valid = await tryRefreshToken();
-  if (!valid) { block("Not authenticated", "/login"); return; }
-  await next();
-};
+The `AuthAdapter` is Heron's fix for this: **one centralized, server-side
+bridge** between Heron and whatever your real backend is —
+`authenticate()`, `verify()`, `revoke()`, `loadPermissions()`. Heron owns an
+HttpOnly session cookie (invisible to `script.ts`, sent automatically on
+every request, including SSR); your backend owns credential persistence,
+expiry, and revocation. The adapter is only the translation layer between
+them — so instead of a widget calling your backend directly, it calls two
+**fixed, backend-agnostic** Heron endpoints:
 
-async function tryRefreshToken(): Promise<boolean> {
-  const client = $egret.getService("egretClient");
-  const res = await client.call(
-    "authentication.get_refreshed_token",
-    { kind: "query", method: "POST", public: true },
-    { refresh_token: localStorage.getItem("auth_refresh_token") },
-  );
-  if (!res.ok) return false;
-  localStorage.setItem("auth_token", res.data.access_token);
-  return true;
-}
-```
+| Endpoint | Calls this adapter method |
+|---|---|
+| `POST /api/auth/session` | `authenticate(credentials)` |
+| `GET /api/auth/session` | `verify(credential)` |
+| `DELETE /api/auth/session` | `revoke(credential)` |
+| `GET /api/auth/permissions` | `loadPermissions(identity)` |
 
-Simple, no server-side enforcement — fine for CSR-only apps where the API
-itself is the real authorization boundary.
+Because every app talks to the *same* two endpoints regardless of backend,
+Heron itself never needs to know what your backend looks like — the adapter
+is the only place that does. `loadPermissions()` is where you map whatever
+shape your backend's permissions come in (roles, groups, grant strings,
+anything) into Heron's own `{ action, subject, conditions? }` rule shape,
+however makes sense for your data. That mapping is exactly what keeps Heron
+apps backend-agnostic — nothing about `can` is Egret-specific.
 
-## Option B — `AuthAdapter` (SSR apps, cookie sessions, custom backends)
-
-### When you actually need this
-
-An `AuthAdapter` is a **centralized, server-safe bridge** between Heron's
-server and your real backend — `authenticate()`, `verify()`, `revoke()`, and
-`loadPermissions()`.
-
-The reason it's necessary once you have real permissions/roles: a Heron app
-doesn't just render a page once — the server also handles the requests that
-fetch widgets, scripts, and actions on their own (see
-[App Structure](/docs/heron/app-structure) and
-[How to Add a Server Action](/docs/guides/widgets/server-actions)). For `can` to
-correctly prune a widget tree or protect a server action, **the server**
-needs to know who's asking and what they're allowed to do — not just the
-browser. Option A's client-side token (stored in `localStorage`) never
-reaches the server, so it can't power server-side `can` enforcement. If your
-app has more than one role or any real permission model, use `AuthAdapter` so
-`can` is actually enforced where it matters, not just used to hide UI.
-
-What `bootstrap_app` does: `app.config.ts` points at an adapter file, and the
-framework handles cookie sessions, SSR-side verification, and permission
-loading around it.
+## Wiring it in
 
 ```ts
 // app.config.ts
@@ -79,56 +60,103 @@ authorization: {
 },
 ```
 
-The adapter implements four methods — this example wires to a **non-Egret**
-REST backend:
+## The adapter's four functions
 
 ```ts
 // authorization/auth-adapter.ts
-const authAdapter: AuthAdapter = {
-  async authenticate(credentials) {
-    const res = await fetch(`${apiBase()}/api/auth/login`, {
-      method: "POST",
-      body: JSON.stringify(credentials),
-    });
-    // ... return { credential, principal, expiresAt }
-  },
-  async verify(credential) { /* GET /api/auth/me */ },
-  async revoke(credential) { /* POST /api/auth/logout */ },
-  async loadPermissions(identity) {
-    const raw = await loadBackendPermissions(identity.credential);
-    return adaptPermissions(raw); // map to Heron's { action, subject, conditions? } shape
-  },
+import type { AuthAdapter } from "@heron-ws/app-runtime";
+
+const authAdapter: AuthAdapter = { authenticate, verify, revoke, loadPermissions };
+export default authAdapter;
+```
+
+| Function | Called when | Returns |
+|---|---|---|
+| `authenticate(credentials, ctx)` | A widget `POST`s `/api/auth/session` to log in | `{ credential, principal, expiresAt, browserToken? }` or `null` |
+| `verify(credential, ctx)` | Any request needs to check an existing session (SSR, `GET /api/auth/session`) | `{ credential, principal, expiresAt }` or `null` |
+| `revoke(credential, ctx)` | A widget `DELETE`s `/api/auth/session` to log out | `void` |
+| `loadPermissions(identity, ctx)` *(optional)* | `GET /api/auth/permissions`, or before a `can`-gated SSR render | An array of Heron `AuthorizationRule`s |
+
+Real example, `bootstrap_app` (wires to its own bespoke REST API):
+
+```ts
+async authenticate(credentials) {
+  const res = await fetch(`${apiBase()}/api/auth/login`, {
+    method: "POST",
+    body: JSON.stringify(credentials),
+  });
+  if (!res.ok) return null;
+  const { accessToken, user, expiresAt } = (await res.json()).data;
+  return { credential: accessToken, browserToken: accessToken, principal: toPrincipal(user), expiresAt };
+},
+async verify(credential) {
+  const res = await fetch(`${apiBase()}/api/auth/me`, { headers: { authorization: `Bearer ${credential}` } });
+  if (!res.ok) return null;
+  const user = (await res.json()).data;
+  return { credential, principal: toPrincipal(user), expiresAt: user.expiresAt };
+},
+async revoke(credential) {
+  await fetch(`${apiBase()}/api/auth/logout`, { method: "POST", headers: { authorization: `Bearer ${credential}` } });
+},
+async loadPermissions(identity) {
+  return adaptPermissions(await loadBackendPermissions(identity.credential));
+},
+```
+
+`authenticate`/`loadPermissions` look meaningfully different depending on
+your backend — see real, complete implementations for two different kinds of
+backend in [Authenticate Examples](/docs/guides/backend-and-auth/auth-adapter/authenticate-examples)
+and [loadPermissions Examples](/docs/guides/backend-and-auth/auth-adapter/load-permissions-examples).
+
+## What a widget actually calls
+
+Never call your backend's login endpoint directly from a widget — call
+Heron's fixed session endpoint instead, so the server-side HttpOnly cookie
+gets set. Real example, `bootstrap_app`'s login widget:
+
+```ts
+// widgets/pages/login/script.ts
+const res = await fetch("/api/auth/session", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  credentials: "same-origin",
+  body: JSON.stringify({ userId }),
+});
+const { data } = await res.json();
+// data.principal, data.browserToken (only ever returned to script.ts,
+// never included in SSR bootstrap state)
+
+// Permissions load through the SAME adapter, via the fixed endpoint —
+// not by asking the backend directly:
+const rulesRes = await fetch("/api/auth/permissions", {
+  headers: { Authorization: `Bearer ${data.browserToken}` },
+});
+```
+
+## When you don't need any of this
+
+If your app is CSR-only with no `server.ts` loaders, no server actions, and
+no SSR routes — there's nothing server-side for `can` to protect, so an
+`AuthAdapter` mostly buys you nothing. `alefbab_app` skips it entirely: no
+`authorization` block in `app.config.ts`, a token in `localStorage`, and a
+middleware that guards client-side navigation only.
+
+```ts
+// middlewares/auth.ts
+// @Middleware({ target:"page", stage:"route_matched", priority:10 })
+const authGuard = async (context: any, next: any, block: any) => {
+  if (PUBLIC_PAGES.has(context.pageName)) { await next(); return; }
+  if (!(await hasValidToken())) { block("Not authenticated", "/login"); return; }
+  await next();
 };
 ```
 
-The permission mapper translates your backend's native grant format into
-Heron's rule shape — including row-level (`"own"`) conditions:
-
-```ts
-function grantToRule(grant: string, userId?: string): AuthorizationRule {
-  if (grant === "*") return { action: "*", subject: "*" };
-  const ownMatch = /^([^:]+):([^:]+):own$/.exec(grant);
-  if (ownMatch) {
-    const [, action, subject] = ownMatch;
-    return { action, subject, conditions: { [OWNER_FIELD[subject]]: userId } };
-  }
-  const [action, subject] = grant.split(":");
-  return { action, subject };
-}
-```
-
-To wire the adapter to the **Egret backend** itself instead, `authenticate`/
-`verify`/`revoke` call the same `authentication.*` commands/queries shown in
-Option A (via `egretClient`) rather than a custom REST API — everything else
-about the adapter contract stays the same.
-
-## Which one to use
-
-| | Option A (direct) | Option B (`AuthAdapter`) |
+| | No adapter (client-only) | `AuthAdapter` |
 |---|---|---|
 | SSR routes | No | Yes |
-| Server-enforced auth | No (client-only guard) | Yes (cookie verified server-side) |
-| Setup effort | Low | Higher, but framework-managed |
+| Server-enforced `can` | No — hides UI only | Yes |
+| Setup effort | Low | Higher, framework-managed |
 
-Once permissions are loaded (either option), gate UI with `$egret.auth` — see
+Once permissions are loaded (either way), gate UI and server logic with
+`$egret.auth` — see
 [Authorization Checks](/docs/guides/backend-and-auth/authorization-checks).
