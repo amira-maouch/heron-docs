@@ -38,6 +38,17 @@ the dynamic one:
 /items/:id
 ```
 
+## Read route params through the router API, not manual parsing
+
+```ts
+$egret.getPageParams().queryParams.id;
+```
+
+Not hand-parsing `currentRoute()` or splitting the pathname — that gets
+fragile the moment routes gain an app prefix, nesting, optional segments,
+search params, or legacy aliases. The manifest owns URL structure; widgets
+just consume the named params it resolves.
+
 ## A route change and a component remount are different decisions
 
 `go("/items/123")` asks the router to reconstruct the page — even when most
@@ -62,7 +73,7 @@ because the selected id changed. Old field values can survive:
 nameField.setProps({ value: draft?.name ?? "" });
 ```
 
-Only setting fields that *have* a value leaves the previous item's value on
+Only setting fields that _have_ a value leaves the previous item's value on
 screen for whatever wasn't set. A component id identifies a UI node — not
 which record currently owns its state.
 
@@ -70,16 +81,16 @@ which record currently owns its state.
 
 Different data needs different homes:
 
-| Lifetime | Where it lives |
-|---|---|
-| One editor controller | Component-local variable |
-| One record's unsaved draft | `drafts[recordId]` |
-| Shared while moving between records | Workspace-closure cache |
+| Lifetime                            | Where it lives             |
+| ----------------------------------- | -------------------------- |
+| One editor controller               | Component-local variable   |
+| One record's unsaved draft          | `drafts[recordId]`         |
+| Shared while moving between records | Workspace-closure cache    |
 | Survives leaving/reopening the page | Persistent browser storage |
-| Saved business data | The server |
+| Saved business data                 | The server                 |
 
 ```ts
-cache.drafts[recordId]  // a draft survives switching away and back
+cache.drafts[recordId]; // a draft survives switching away and back
 ```
 
 The workspace cache belongs to the workspace's closure and gets cleared on
@@ -96,7 +107,7 @@ by accident.
 
 ## Hydrate known data before awaiting secondary requests
 
-A common flicker bug: awaiting a secondary request *before* applying a
+A common flicker bug: awaiting a secondary request _before_ applying a
 value the workspace already had locally (from the initial load, or a
 previous fetch) — so the UI briefly renders a fallback before showing the
 value it already knew.
@@ -136,7 +147,7 @@ destroy the whole cache on leaving the workspace.
 ## Guard against stale async results
 
 Switching records doesn't cancel requests already in flight — a slow
-response for the *previous* selection can land after the *new* one is
+response for the _previous_ selection can land after the _new_ one is
 already showing, and overwrite it. Real pattern:
 
 ```ts
@@ -168,9 +179,18 @@ export function onPageUnload($egret: any, cleanup: () => void): void {
   }
   if (typeof lifecycle?.use !== "function") return;
   const name = `cleanup-${Math.random()}`;
-  lifecycle.use("page_unload", async (_ctx: unknown, next: () => Promise<void>) => {
-    try { cleanup(); await next(); } finally { lifecycle.remove?.("page_unload", name); }
-  }, { name });
+  lifecycle.use(
+    "page_unload",
+    async (_ctx: unknown, next: () => Promise<void>) => {
+      try {
+        cleanup();
+        await next();
+      } finally {
+        lifecycle.remove?.("page_unload", name);
+      }
+    },
+    { name },
+  );
 }
 ```
 
@@ -191,25 +211,3 @@ flight. Safe order: flush current edits → remember any UI-only unsaved
 drafts → update the active row/title → select the next record → hydrate
 its fields → update the URL. If the flush fails, stay put and show the
 error — don't navigate away and silently lose the edit.
-
-## Read route params through the router API, not manual parsing
-
-```ts
-$egret.getPageParams().queryParams.id
-```
-
-Not hand-parsing `currentRoute()` or splitting the pathname — that gets
-fragile the moment routes gain an app prefix, nesting, optional segments,
-search params, or legacy aliases. The manifest owns URL structure; widgets
-just consume the named params it resolves.
-
-## Test timing, not only final output
-
-Most bugs here resolve too fast for a final-state-only test to ever see
-them. Write tests that deliberately hold a request open and inspect
-*intermediate* state: hold a secondary request open and assert the fallback
-never renders; delay an old record's response and assert it can't overwrite
-the new one; switch records and assert drafts stay isolated; leave the
-workspace and assert drafts are discarded; assert shared lists are fetched
-exactly once. A test that only checks the end state misses nearly every
-flicker and race condition this page is about.
