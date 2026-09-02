@@ -7,8 +7,7 @@ sidebar_position: 4
 Patterns for master-detail screens — a list/rail on one side, a selected
 record's editor on the other, where clicking a different row shouldn't
 rebuild the whole page. The throughline: **route ownership, data ownership,
-and state lifetime should all match each other.** Real patterns from a
-production call-center app's agent directory (`/agents`, `/agents/:oid`).
+and state lifetime should all match each other.**
 
 ## Use a parent workspace when sibling pages share expensive data
 
@@ -16,14 +15,14 @@ Nested routes are for URLs that are really a **selection inside the same
 working context**, not independent screens:
 
 ```text
-/agents          → owns the directory/list
-/agents/:oid      → identifies the selected agent
+/items          → owns the list
+/items/:id      → identifies the selected item
 ```
 
 The workspace (the parent route) owns data shared across every selection —
-the agent rows, runtime profiles — and hands the selected `oid` plus cached
-data to the detail editor. Otherwise every rail click rebuilds the whole
-page and re-fetches the same directory it already has.
+the list rows, any shared reference data — and hands the selected `id` plus
+cached data to the detail editor. Otherwise every row click rebuilds the
+whole page and re-fetches the same list it already has.
 
 Use separate (non-nested) pages when screens have genuinely independent
 data. Use a workspace when changing the URL param is mostly "change what's
@@ -33,18 +32,18 @@ Always define conflicting static routes explicitly, or they collide with
 the dynamic one:
 
 ```text
-/agents/new
-/agents/providers
-/agents/teams/:oid
-/agents/:oid
+/items/new
+/items/archived
+/items/groups/:id
+/items/:id
 ```
 
 ## A route change and a component remount are different decisions
 
-`go("/agents/123")` asks the router to reconstruct the page — even when most
+`go("/items/123")` asks the router to reconstruct the page — even when most
 of the screen (the rail, the workspace chrome) is identical to what's
-already there. For an in-workspace selection: update the active rail/title,
-hand the editor the new agent's data, and update the URL **without**
+already there. For an in-workspace selection: update the active row/title,
+hand the editor the new item's data, and update the URL **without**
 remounting the workspace. Reserve real router navigation for actually
 leaving the workspace.
 
@@ -56,55 +55,56 @@ transient workspace state that shouldn't clutter history.
 
 Heron reuses component instances by stable id where it can (good for
 performance) — which means a widget is **not guaranteed to remount** just
-because the entity id changed. Old field values can survive:
+because the selected id changed. Old field values can survive:
 
 ```ts
 // Right: write every field, including the empty ones
-toolName.setProps({ value: draft?.name ?? "" });
+nameField.setProps({ value: draft?.name ?? "" });
 ```
 
-Only setting fields that *have* a value leaves the previous agent's value
-on screen for whatever wasn't set. A component id identifies a UI node —
-not which entity currently owns its state.
+Only setting fields that *have* a value leaves the previous item's value on
+screen for whatever wasn't set. A component id identifies a UI node — not
+which record currently owns its state.
 
-## Scope state to its real lifetime, and key it by entity id
+## Scope state to its real lifetime, and key it by record id
 
 Different data needs different homes:
 
 | Lifetime | Where it lives |
 |---|---|
 | One editor controller | Component-local variable |
-| One entity's unsaved draft | `drafts[entityId]` |
-| Shared while moving between entities | Workspace-closure cache |
+| One record's unsaved draft | `drafts[recordId]` |
+| Shared while moving between records | Workspace-closure cache |
 | Survives leaving/reopening the page | Persistent browser storage |
 | Saved business data | The server |
 
 ```ts
-cache.toolDrafts[agentId]  // Maya's draft survives switching to Karim and back
+cache.drafts[recordId]  // a draft survives switching away and back
 ```
 
 The workspace cache belongs to the workspace's closure and gets cleared on
 unload — never `window` or `localStorage` for state that should disappear
 once you leave.
 
-Never store multiple entities' unsaved state in one shared variable —
-`let toolDraft = ...` silently becomes "whichever entity touched it last."
-Key it: `toolDrafts[oid]`. Applies to form drafts, open panes, validation
-errors, temp uploads, pending selections, per-record pagination, optimistic
+Never store multiple records' unsaved state in one shared variable —
+`let draft = ...` silently becomes "whichever record touched it last." Key
+it: `drafts[id]`. Applies to form drafts, open panes, validation errors,
+temp uploads, pending selections, per-record pagination, optimistic
 changes — and decide deliberately whether something like tab selection is
-workspace-wide or per-entity, rather than letting component reuse decide it
+workspace-wide or per-record, rather than letting component reuse decide it
 by accident.
 
 ## Hydrate known data before awaiting secondary requests
 
-A real flicker bug: awaiting a namespace-config request *before* applying
-the agent's already-known `runtime_profile_id` — so the UI briefly rendered
-"Default profile" before the real one arrived.
+A common flicker bug: awaiting a secondary request *before* applying a
+value the workspace already had locally (from the initial load, or a
+previous fetch) — so the UI briefly renders a fallback before showing the
+value it already knew.
 
 ```text
-Bad:  render "" → await namespace config → render default → apply real profile
-Good: apply cached fields immediately → render real profile → await namespace
-      config → populate only what still needs it (e.g. transfer targets)
+Bad:  render fallback → await secondary request → apply known value
+Good: apply the known value immediately → await the secondary request only
+      for the specific fields that genuinely still need it
 ```
 
 An async dependency should only delay the piece of UI that actually depends
@@ -113,20 +113,20 @@ on it — not everything downstream of it in the code.
 ## Don't render misleading defaults during loading
 
 A default is valid business data, not a loading state. If the current value
-is genuinely unknown, show a skeleton, a disabled field, or empty — not
-"Default profile." Users read a rendered default as real state; when it
-then changes to the actual value, that reads as a bug even though nothing
-was technically wrong.
+is genuinely unknown, show a skeleton, a disabled field, or empty — not a
+default value. Users read a rendered default as real state; when it then
+changes to the actual value, that reads as a bug even though nothing was
+technically wrong.
 
 ## Cache shared data at the workspace level, with a real invalidation policy
 
 The initial list response often already carries what several parts of the
-page need (name, active id, profile id, channels, tags, ...) — reuse it
-instead of each detail controller re-fetching on every selection:
+page need — reuse it instead of each detail controller re-fetching on every
+selection:
 
 ```ts
 // Workspace loads shared datasets once
-await Promise.all([listVoiceAgents(), listRuntimeProfiles()]);
+await Promise.all([listItems(), listReferenceData()]);
 ```
 
 Give the cache a real policy, not just a load: update the row after saving,
@@ -135,7 +135,7 @@ destroy the whole cache on leaving the workspace.
 
 ## Guard against stale async results
 
-Switching entities doesn't cancel requests already in flight — a slow
+Switching records doesn't cancel requests already in flight — a slow
 response for the *previous* selection can land after the *new* one is
 already showing, and overwrite it. Real pattern:
 
@@ -143,8 +143,8 @@ already showing, and overwrite it. Real pattern:
 const isCurrent = () => lifecycle.active && lifecycle.mount === mount;
 ```
 
-Check this after every meaningful `await` — loading the entity, secondary
-config, related lists, autosave — and bail if it's false. Pair with
+Check this after every meaningful `await` — loading the record, secondary
+data, related lists, autosave — and bail if it's false. Pair with
 `AbortController` where you can to cancel the request outright, not just
 ignore its result.
 
@@ -181,21 +181,21 @@ can turn one click into several old handlers firing at once. Prefer
 component-level listeners. If you genuinely need document delegation:
 register it once (or remove it on unload), guard the handler with
 `isCurrent()`, and make sure it never permanently captures an old `$self`,
-cache, or entity id — the listener can be long-lived, but the controller
+cache, or record id — the listener can be long-lived, but the controller
 logic it calls into must be replaceable.
 
-## Flush edits before switching entities
+## Flush edits before switching records
 
-Selecting a different agent shouldn't discard an autosave already in
+Selecting a different record shouldn't discard an autosave already in
 flight. Safe order: flush current edits → remember any UI-only unsaved
-drafts → update the active rail/title → select the next entity → hydrate
+drafts → update the active row/title → select the next record → hydrate
 its fields → update the URL. If the flush fails, stay put and show the
 error — don't navigate away and silently lose the edit.
 
 ## Read route params through the router API, not manual parsing
 
 ```ts
-$egret.getPageParams().queryParams.oid
+$egret.getPageParams().queryParams.id
 ```
 
 Not hand-parsing `currentRoute()` or splitting the pathname — that gets
@@ -207,9 +207,9 @@ just consume the named params it resolves.
 
 Most bugs here resolve too fast for a final-state-only test to ever see
 them. Write tests that deliberately hold a request open and inspect
-*intermediate* state: hold a namespace request open and assert the fallback
-never renders; delay an old entity's response and assert it can't overwrite
-the new one; switch entities and assert drafts stay isolated; leave the
+*intermediate* state: hold a secondary request open and assert the fallback
+never renders; delay an old record's response and assert it can't overwrite
+the new one; switch records and assert drafts stay isolated; leave the
 workspace and assert drafts are discarded; assert shared lists are fetched
 exactly once. A test that only checks the end state misses nearly every
 flicker and race condition this page is about.
