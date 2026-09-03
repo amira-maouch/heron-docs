@@ -70,6 +70,24 @@ Reference an app-level namespace with `t:<namespace>.<key>`:
 { "props": { "children": "t:_default.brand_name_title" } }
 ```
 
+## First-paint guarantee
+
+Heron completes the namespaces used by a widget before that widget's first
+visible client mount:
+
+- SSR embeds the request locale and translation resources in the bootstrap.
+  Hydration adopts and primes that exact snapshot; it does not refetch the
+  same widget namespaces or replace visible HTML with a translation loader.
+- CSR waits for widget `_self`, `_default`, component bundles, and declared
+  component translation overrides before revealing the widget.
+- Mobile applies the same gate and also waits for its widget stylesheet.
+- On web, `$egret.i18n.changeLanguage()` loads the next language before
+  committing it, so the previous translated UI stays visible rather than
+  flashing keys.
+
+This guarantee covers declared resources. A missing key is still a missing
+key and follows the configured i18n fallback chain.
+
 ## Loading extra namespaces at boot
 
 The shell only preloads `common` and `actions` automatically. If your widgets
@@ -83,8 +101,8 @@ const rootScript = ($egret: EgretRuntime) => {
 export default rootScript;
 ```
 
-Without this, those namespaces' `t()` calls render the raw key instead of the
-translated string.
+Namespaces requested imperatively by a later script are outside the initial
+widget resource set. Await them before showing UI that depends on them.
 
 ## Switching language at runtime
 

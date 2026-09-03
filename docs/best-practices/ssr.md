@@ -7,10 +7,17 @@ sidebar_position: 2
 - **Default to CSR.** Turn SSR on per-route, deliberately, for pages where
   first paint or crawlability actually matters. Don't flip the app-wide
   `ssr.default` to `true` just to avoid per-route config.
-- **Always give client-only widgets a real placeholder**, not just the
-  `minHeight: 2.5rem` fallback, for anything visually significant (a chart, a
-  map). A generic empty box for a moment is fine; a layout jump is not. See
+- **Give every browser-only registry component a presentation contract.** Use
+  `layout: "none"` for nonvisual providers/portals. Use `layout: "reserved"`
+  with a realistic footprint for visual components. Declare it once in the
+  component contract instead of repeating it in every widget. See
   [CSR Placeholders](/docs/guides/ssr/csr-placeholders).
+- **Use metadata placeholders only for instance-specific shapes.** They remain
+  useful for a chart whose height varies by placement or for a meaningful
+  skeleton, and override the registry default.
+- **Do not rely on guessed generic heights.** If Heron cannot prove the layout
+  is stable, it deliberately chooses an atomic first reveal. This prevents a
+  jump but gives up immediately visible partial SSR for that route.
 - **Keep `renderMode: "client-only"` boundaries as low in the tree as
   possible.** It's an opaque boundary — everything under it loses SSR, even
   parts that could render universally. Wrap only the part that truly needs
@@ -26,3 +33,10 @@ sidebar_position: 2
 - **Test with JS disabled**, not just View Source. It's the fastest way to
   catch a widget that silently depends on client-only rendering without being
   marked `client-only`.
+- **Throttle JavaScript and the network while testing hydration.** Confirm the
+  page never goes visible → loading/empty → visible. Valid sequences are
+  loading → visible or server-visible → interactive.
+- **Keep first-paint copy declarative.** Put visible initial text in metadata
+  translation references or component translation contracts. Widget scripts
+  are for behavior after child instances are ready, not for replacing raw keys
+  after the first paint.
