@@ -290,4 +290,7 @@ browser runtime instance.
 - Valid credential with a matching rule: allow.
 
 For rule declarations and imperative checks, continue with
-[Authorization Checks](/docs/guides/backend-and-auth/authorization-checks).
+[Authorization Checks](/docs/guides/backend-and-auth/authorization-checks). For
+a practical checklist — when to use `auth` vs `can`, when `loadPermissions` is
+actually worth implementing, cookie vs Bearer — see
+[Authentication & Authorization Best Practices](/docs/best-practices/authentication-and-authorization).

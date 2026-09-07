@@ -105,3 +105,7 @@ function filterTasksByRule(tasks, rule, auth) {
 `$egret.auth.can()` returns `false` while permissions are still loading, not
 `true`. Don't gate a loading spinner behind a `can()` check — it'll never show
 correctly before permissions arrive.
+
+For adapter-side guidance — when to implement `loadPermissions`, how to pick
+`auth` vs `can` — see
+[Authentication & Authorization Best Practices](/docs/best-practices/authentication-and-authorization).
