@@ -29,7 +29,21 @@ there.
 }
 ```
 
-`{ action: "*", subject: "*" }` is the convention for "admin only".
+`{ action: "*", subject: "*" }` is the convention for "admin only". It does
+not mean “any authenticated user”; use `"auth": true` for that.
+
+## Requiring login without a permission
+
+```json
+{
+  "component": "egret:core:div",
+  "id": "signed-in-profile",
+  "auth": true
+}
+```
+
+Use the same property on a route or server action. An authenticated user with
+an empty permission list passes `auth: true` but fails every specific `can`.
 
 ### `any` / `all`
 

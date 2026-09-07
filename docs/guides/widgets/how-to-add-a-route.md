@@ -55,7 +55,21 @@ longer exact matches win over shorter/prefix ones.
 "errorRoutes": { "404": { "widget": "pages/errors/not-found" } }
 ```
 
-## Gating a route behind permissions
+## Requiring login
+
+Use `auth: true` when any verified user may enter:
+
+```json
+"account": {
+  "widget": "pages/account",
+  "auth": true
+}
+```
+
+You can also put `"auth": true` at the top of `app-manifest.json` and set
+`"auth": false` on public routes such as login and password reset.
+
+## Requiring a permission
 
 ```json
 "users": {
@@ -63,6 +77,9 @@ longer exact matches win over shorter/prefix ones.
   "can": { "any": [{ "action": "read", "subject": "User" }] }
 }
 ```
+
+`can` implies authentication. A missing/invalid credential receives `401`; a
+verified user without the rule receives `403`.
 
 See [Authentication & Authorization](/docs/guides/backend-and-auth/authentication-and-authorization).
 

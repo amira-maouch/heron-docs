@@ -2,9 +2,13 @@
 sidebar_position: 1
 ---
 
-# `authenticate()` Examples
+# Optional `authenticate()` Examples
 
-Two real, complete implementations — a bespoke REST backend, and an
+You need `authenticate()` only when `auth.session` is configured and the app
+uses `POST /api/auth/session`. Bearer-only apps keep login in their browser or
+native client and omit this method.
+
+Two complete implementations — a bespoke REST backend, and an
 Egret-style backend. The contract is identical either way: take whatever
 `POST /api/auth/session` sent as its body, return
 `{ credential, principal, expiresAt, browserToken? }` on success or `null`
@@ -112,12 +116,12 @@ async authenticate(rawCredentials) {
 },
 ```
 
-Note this one calls Egret's `/public/authentication/query/get_token` and
-`authentication/query/get_user_information` **directly with `fetch`**, not
-through `$egret.getService("egretClient")` — the adapter runs entirely on
-the server (Node), separate from the browser-side service that
-[middlewares initialize](/docs/guides/setup/services); it doesn't have
-access to it and doesn't need to.
+The adapter runs on the server, so it cannot use the browser instance returned
+by `$egret.getService("egretClient")`. Import the framework-agnostic
+`@egret/client` package directly instead — it shares protocol code with the
+browser service without sharing the browser runtime instance. See
+[Why a server adapter cannot use `$egret.getService()`](/docs/guides/backend-and-auth/authentication-and-authorization#why-a-server-adapter-cannot-use-egretgetservice)
+for a full `verify`/`loadPermissions` example.
 
 ## MFA / multi-step login
 

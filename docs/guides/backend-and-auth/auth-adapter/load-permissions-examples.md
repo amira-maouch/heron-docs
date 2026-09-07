@@ -4,10 +4,12 @@ sidebar_position: 2
 
 # `loadPermissions()` Examples
 
-`loadPermissions(identity)` maps whatever shape your backend's permissions
-come in into Heron's rule shape: `{ action: string, subject: string,
-conditions?: unknown }`. Two real, differently-shaped backends — grant
-strings, and group membership.
+`loadPermissions(identity)` is optional — only implement it once the app has
+RBAC `can` declarations. An app that only gates on `auth: true`/`auth: false`
+(any verified user vs. public) can skip this page entirely. Once you do need
+it, it maps whatever shape your backend's permissions come in into Heron's
+rule shape: `{ action: string, subject: string, conditions?: unknown }`. Two
+real, differently-shaped backends — grant strings, and group membership.
 
 ## Grant strings → rules (with row-level conditions)
 
@@ -17,7 +19,7 @@ access). Split into two files on purpose — one that fetches (I/O, knows
 nothing about Heron), one that maps (pure, no I/O):
 
 ```ts
-// authorization/permissions-loader.ts — I/O only
+// authorization/permissions-loader.ts — a private helper, not app.config
 export type RawPermissions = { grants: string[]; userId?: string };
 
 export async function loadPermissions(token: string | null): Promise<RawPermissions> {
@@ -35,7 +37,7 @@ export async function loadPermissions(token: string | null): Promise<RawPermissi
 ```
 
 ```ts
-// authorization/permissions-adapter.ts — pure mapping, no I/O
+// authorization/permissions-adapter.ts — another private helper
 const OWNER_FIELD_BY_SUBJECT: Record<string, string> = { Task: "assigneeId" };
 
 function grantToRule(grant: string, userId?: string): AuthorizationRule {
@@ -67,6 +69,9 @@ async loadPermissions(identity) {
   return adaptPermissions(raw);
 },
 ```
+
+These helper files are called only by `AuthAdapter.loadPermissions`; they are
+not an alternative Heron permissions pipeline and cannot bypass `verify()`.
 
 The `"own"` handling is the interesting part: the backend hands out the
 **same static grant** (`"read:Task:own"`) to every principal with a given
