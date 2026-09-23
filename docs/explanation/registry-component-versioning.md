@@ -240,7 +240,7 @@ component only majors when its _own_ contract actually breaks.
 1. **Edit the source** — `registries/<reg>/components/(<ns>)/<name>/src/index.tsx`.
 2. **Bump the version** — `…/<name>/contract.json` → `"version": "2.0.0"`. This is the release identity.
 3. **Build** — `pnpm build -- --registry=<reg>`. esbuild compiles the namespace into a content-addressed ESM graph under `…/(<ns>)/build/esm/` (`graph.json` + `browser/entries/<name>-<hash>.js`). Only changed components get new hashed filenames.
-4. **Publish** — `node --import tsx src/publish-component-releases.ts --component <reg>/<ns>/<name>` (or `pnpm publish:components`). The publisher:
+4. **Publish** — `pnpm publish:component <reg>/<ns>/<name>` (builds that component's namespace, then publishes only it), or `pnpm publish:components` for everything. The publisher:
    - checks this component's own identity (contract hash + entry hash, ignoring the namespace graph hash): unchanged → skip; changed but version reused → **fail** ("bump the version"); new → write;
    - copies files into the shared pool `releases/artifacts/modules/<reg>/<ns>/…` (identical bytes are stored once → dedup);
    - writes the composition map `releases/artifacts/graphs/<reg>/<ns>/<graphHash>.json`;
