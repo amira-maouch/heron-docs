@@ -235,31 +235,87 @@ component only majors when its _own_ contract actually breaks.
 
 ## End-to-end flow (change → publish → consume)
 
-**Registry side — publish a new version**
+This is the full path a change travels, from editing a component to seeing it in
+a consuming app. The first half happens in the registry repo; the second half in
+the app.
 
-1. **Edit the source** — `registries/<reg>/components/(<ns>)/<name>/src/index.tsx`.
-2. **Bump the version** — `…/<name>/contract.json` → `"version": "2.0.0"`. This is the release identity.
-3. **Build** — `pnpm build -- --registry=<reg>`. esbuild compiles the namespace into a content-addressed ESM graph under `…/(<ns>)/build/esm/` (`graph.json` + `browser/entries/<name>-<hash>.js`). Only changed components get new hashed filenames.
-4. **Publish** — `pnpm publish:component <reg>/<ns>/<name>` (builds that component's namespace, then publishes only it), or `pnpm publish:components` for everything. The publisher:
-   - checks this component's own identity (contract hash + entry hash, ignoring the namespace graph hash): unchanged → skip; changed but version reused → **fail** ("bump the version"); new → write;
-   - copies files into the shared pool `releases/artifacts/modules/<reg>/<ns>/…` (identical bytes are stored once → dedup);
-   - writes the composition map `releases/artifacts/graphs/<reg>/<ns>/<graphHash>.json`;
-   - writes the immutable receipt `releases/components/<reg>/<ns>/<name>/2.0.0.json`;
-   - updates the mutable `releases/indexes/components/<reg>/<ns>/<name>.json` (`versions` + `latest`).
-   Old versions and their graphs stay untouched.
-5. **Serve** — the registry server exposes:
-   - `…/components/<ns>/<name>/releases/<selector>` → resolves selector → release receipt (+ `graphUrl`),
-   - `…/graphs/<ns>/<graphHash>` → the composition map,
-   - `…/modules/<ns>/*` → the content-addressed files (from the shared pool).
+### Registry side: publish a new version
 
-**Consumer side — use it in an app**
+**1. Edit the source.** Change the component's implementation.
 
-6. **Declare a selector** — `bundle-manifest.json` → `"<reg>/<ns>/<name>": "^2.0.0"` (or `1.4.2` / `~1.4` / `latest`).
-7. **Vendor** — `heron-build-components`:
-   - resolves the selector against `…/releases/<selector>` (once, at build time),
-   - fetches the composition map via `graphUrl`, downloads only this component's file closure from `…/modules/<ns>/*`, verifies every hash,
-   - pins the exact version + file hashes in `.bundle-lock.json` and materializes files under `bundles/registries/<reg>/components/esm/(<ns>)/`.
-8. **Build & run** — later builds reuse the lock (no re-resolution); the browser `import()`s the pinned local files and SSR imports the pinned node entries. Change a selector → re-run the vendor → only the changed component is re-fetched.
+```text
+registries/<reg>/components/(<ns>)/<name>/src/index.tsx
+```
+
+**2. Bump the version.** The `version` field in the contract is the release
+identity, so every meaningful change gets a new number.
+
+```jsonc
+// registries/<reg>/components/(<ns>)/<name>/contract.json
+{ "version": "2.0.0" }
+```
+
+**3. Build.** esbuild compiles the whole namespace into a content-addressed ESM
+graph. Only components that actually changed get new hashed filenames.
+
+```bash
+pnpm build -- --registry=<reg>
+# output: registries/<reg>/components/(<ns>)/build/esm/
+#   graph.json + browser/entries/<name>-<hash>.js
+```
+
+**4. Publish.** Build and publish just this component (or everything):
+
+```bash
+pnpm publish:component <reg>/<ns>/<name>   # this one component
+pnpm publish:components                    # all components
+```
+
+The publisher does five things:
+
+1. Checks the component's *own* identity (contract hash + entry hash, ignoring
+   the namespace graph hash). Unchanged means skip, changed under an existing
+   version means fail with "bump the version", new means write.
+2. Copies files into the shared pool `releases/artifacts/modules/<reg>/<ns>/…`,
+   where identical bytes are stored only once (dedup).
+3. Writes the composition map `releases/artifacts/graphs/<reg>/<ns>/<hash>.json`.
+4. Writes the immutable receipt `releases/components/<reg>/<ns>/<name>/2.0.0.json`.
+5. Updates the mutable index `releases/indexes/components/<reg>/<ns>/<name>.json`
+   with the new `versions` list and `latest`.
+
+Older versions and their graphs are never touched.
+
+**5. Serve.** The registry server then exposes three things:
+
+```text
+…/components/<ns>/<name>/releases/<selector>   resolve a selector to a receipt
+…/graphs/<ns>/<hash>                           the composition map
+…/modules/<ns>/*                               the content-addressed files
+```
+
+### Consumer side: use it in an app
+
+**6. Declare a selector.** Pick how the app tracks the component in
+`bundle-manifest.json`.
+
+```jsonc
+{ "components": { "<reg>/<ns>/<name>": "^2.0.0" } }  // or 1.4.2, ~1.4, latest
+```
+
+**7. Vendor.** Running `heron-build-components` resolves the selector once (at
+build time), downloads only this component's files, verifies every hash, and
+records the exact result.
+
+- Resolves the selector against `…/releases/<selector>`.
+- Fetches the composition map, then downloads the component's file closure from
+  `…/modules/<ns>/*`.
+- Pins the exact version and file hashes in `.bundle-lock.json`, and writes the
+  files under `bundles/registries/<reg>/components/esm/(<ns>)/`.
+
+**8. Build and run.** Later builds reuse the lock without re-resolving, so a
+deploy is exactly what was tested. The browser `import()`s the pinned files and
+SSR imports the pinned node entries. To move to a new version, change the
+selector and vendor again; only the changed component is re-fetched.
 
 ## Worked example (the shipped demo)
 
