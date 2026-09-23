@@ -1,0 +1,8 @@
+{
+  "label": "Explanation",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Conceptual background on how Heron works and why. These pages explain models and trade-offs rather than giving step-by-step instructions."
+  }
+}
