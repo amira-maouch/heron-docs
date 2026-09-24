@@ -77,18 +77,33 @@ version. Heron separates the two files:
   content hashes of every file that was vendored.
 
 Resolution happens **once**, during the app build (`heron-build-components`),
-against the registry. After that:
+against the registry. After that the browser and SSR never resolve versions.
+They load only what the lock pins.
 
-- The browser and SSR never resolve versions. They load only what the lock
-  pins.
-- Re-running the build reuses the lock. It does **not** silently pick up a newer
-  version, even for `latest` — you re-resolve explicitly (delete/adjust the lock
-  or run an update).
-- CI should treat the lock as frozen, so a deploy is byte-for-byte what you
-  tested.
+A plain build is now authoritative to that lock. `*`, `latest`, `^`, and `~`
+used to mean "ask the registry again" on every `pnpm dev` or rebuild, so
+publishing a component could change an app the next time someone built it, with
+no commit and no review. That is why a normal build reuses the pinned version
+even when a newer release matches the selector. The selector is re-resolved
+only when it actually changed in `bundle-manifest.json`, when the lock entry or
+its files are missing, or when you ask for an update on purpose:
 
-So `latest` in the manifest means "newest **at resolve time**", pinned
-thereafter — not "newest at every page load".
+```bash
+heron-build-components --update          # re-resolve, rewrite .bundle-lock.json
+HERON_UPDATE=1 heron-build-components    # same thing
+```
+
+Commit the lock with that change. CI should refuse to move it:
+
+```bash
+heron-build-components --frozen-lockfile
+HERON_FROZEN_LOCKFILE=1 heron-build-components
+```
+
+A frozen build fails if the lock is missing or out of date, instead of quietly
+fetching whatever the registry currently calls latest. So `latest` in the
+manifest means "newest at the last update", pinned thereafter — not "newest at
+every page load".
 
 ## What triggers a new component version
 
@@ -315,7 +330,9 @@ records the exact result.
 **8. Build and run.** Later builds reuse the lock without re-resolving, so a
 deploy is exactly what was tested. The browser `import()`s the pinned files and
 SSR imports the pinned node entries. To move to a new version, change the
-selector and vendor again; only the changed component is re-fetched.
+selector if you need a different range, then run `heron-build-components
+--update` and commit `.bundle-lock.json`. Only the components whose resolved
+release actually changed are re-fetched.
 
 ## Worked example (the shipped demo)
 
