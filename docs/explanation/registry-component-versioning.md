@@ -279,11 +279,25 @@ pnpm build -- --registry=<reg>
 #   graph.json + browser/entries/<name>-<hash>.js
 ```
 
-**4. Publish.** Build and publish just this component (or everything):
+**4. Publish.** Build and publish just this component (or everything).
+
+On macOS, use the shorthand command:
 
 ```bash
-pnpm publish:component <reg>/<ns>/<name>   # this one component
-pnpm publish:components                    # all components
+pnpm publish:component shadcn/shadcn/phone-input
+```
+
+On Windows, run the publisher directly because the shorthand relies on POSIX
+shell argument forwarding:
+
+```bash
+pnpm exec tsx src/publish-component-releases.ts --component shadcn/shadcn/phone-input
+```
+
+To publish all components, use:
+
+```bash
+pnpm publish:components
 ```
 
 The publisher does five things:
