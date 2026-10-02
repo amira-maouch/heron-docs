@@ -128,6 +128,27 @@ bump, publication refuses it ("already exists with different component
 artifacts"). Choosing the _level_ (patch/minor/major) is the author's judgment;
 _whether_ a bump is required is enforced.
 
+Two commands help with both:
+
+```bash
+pnpm publish:check            # every component changed under a published version, and the files behind each change
+pnpm release:bump --dry-run   # the bump each one needs, from its contract diff
+pnpm release:bump             # apply it
+```
+
+`release:bump` compares each component's contract with the published one:
+a removed prop/event/method or a prop that became required is **major**, an
+added one (or a change to the component's own registry source) is **minor**,
+anything else — a rebuilt bundle, a shared-package change, contract metadata
+filled in by `contract:sync` — is **patch**. Review the majors before
+publishing: a removed prop may be a rename the author should have kept
+compatible.
+
+A change to the **build toolchain** (how every component is compiled or its
+CSS scoped) changes every component's bytes and therefore needs a patch bump
+of every component — the release store cannot tell "same contract, new
+compiler" from "changed component", and that is deliberate.
+
 ### What gets re-vendored
 
 Because the lock pins per-component content hashes, changing component **A** and
@@ -263,7 +284,8 @@ registries/<reg>/components/(<ns>)/<name>/src/index.tsx
 ```
 
 **2. Bump the version.** The `version` field in the contract is the release
-identity, so every meaningful change gets a new number.
+identity, so every meaningful change gets a new number. Edit it by hand, or run
+`pnpm release:bump` to bump every component that needs it.
 
 ```jsonc
 // registries/<reg>/components/(<ns>)/<name>/contract.json
@@ -297,6 +319,7 @@ pnpm exec tsx src/publish-component-releases.ts --component shadcn/shadcn/phone-
 To publish all components, use:
 
 ```bash
+pnpm publish:check        # optional: what still needs a bump
 pnpm publish:components
 ```
 
