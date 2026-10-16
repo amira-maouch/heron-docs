@@ -14,7 +14,7 @@ your app by default — they're served by Heron's component registries and
 ```json
 {
   "registries": {
-    "egret-ui": "https://registry.heron.ws/api/registries/egret-ui"
+    "egret-ui": "https://registry.heron.ws/api/v2/registries/egret-ui"
   },
   "components": { "egret-ui": "*" },
   "services": { "egret-ui/core/egret-client": "*" }

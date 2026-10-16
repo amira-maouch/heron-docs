@@ -110,8 +110,10 @@ every page load".
 A component gets a new version **only when its own public contract or compiled
 output changes**, and you bump its `version` in `contract.json`:
 
-- **patch** (`2.0.1`): implementation/style change, same contract.
-- **minor** (`2.1.0`): additive contract — a new optional prop, event, method.
+- **patch** (`2.0.1`): no component-local source change — for example, only a
+  shared package, build tool, lockfile, or generated contract metadata changed.
+- **minor** (`2.1.0`): the component's own registry source changed, or its
+  contract gained an optional prop, event, or method.
 - **major** (`3.0.0`): a breaking contract change — removing/renaming/retyping a
   prop, event, method, slot, or style hook.
 
@@ -132,7 +134,7 @@ Two commands help with both:
 
 ```bash
 pnpm publish:check            # every component changed under a published version, and the files behind each change
-pnpm release:bump --dry-run   # the bump each one needs, from its contract diff
+pnpm release:bump --dry-run   # the bump each one needs, from its contract and source diff
 pnpm release:bump             # apply it
 ```
 

@@ -16,7 +16,7 @@ it's usable.
 ```json
 {
   "registries": {
-    "egret-ui": "https://registry.heron.ws/api/registries/egret-ui"
+    "egret-ui": "https://registry.heron.ws/api/v2/registries/egret-ui"
   },
   "services": { "egret-ui/core/egret-client": "*" }
 }
