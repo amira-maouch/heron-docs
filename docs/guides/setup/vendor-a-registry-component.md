@@ -21,7 +21,10 @@ your app by default — they're served by Heron's component registries and
 }
 ```
 
-- `registries` — which registries this app can pull from.
+- `registries` — which registries this app can pull from. The build also
+  needs the app's registry token and the registry's public release key in
+  `trustedReleaseKeys` — see
+  [Connect a New App to the Registry](/docs/guides/setup/connect-a-new-app-to-the-registry).
 - `components` / `services` — which ones to actually vendor. `"*"` vendors
   everything in that namespace; you can instead list specific ids
   (`"ui/display/avatar": "*"`) to keep the build lean.

@@ -91,6 +91,14 @@ disable registry authentication. Omit `HERON_ALLOW_UNSIGNED_COMPONENTS` when
 the local release is signed, and never enable either flag in CI, staging, or
 production. Never commit `.env.local` or its token.
 
+A local registry serves only the signature sidecars committed to
+`heron_registry`; releases signed later by the registry deployment answer
+`503` locally unless `HERON_ALLOW_UNSIGNED_COMPONENTS=1` is set. Before
+committing `.bundle-lock.json`, refresh it with a strict build against the
+hosted registry — a lock written with verification skipped is not reused by
+CI. See
+[Registry Tokens and Release Signing](/docs/explanation/registry-tokens-and-release-signing).
+
 ## Build
 
 ```bash
