@@ -173,7 +173,9 @@ app's permission model.
 Private registry download tokens (#199) and signed registry releases (#1000)
 were developed on separate `registry-token` branches. They are not silently
 applied by this `server-hardening` migration. Plan that rollout separately if
-the consumer also needs it.
+the consumer also needs it — see
+[5.0.0 → 5.1.4](/docs/migration/5.0.0-to-5.1.4) and
+[Connect a New App to the Registry](/docs/guides/setup/connect-a-new-app-to-the-registry).
 
 ### Deployment settings need deployment facts
 
